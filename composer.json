@@ -1,0 +1,35 @@
+{
+  "name": "cargomedia/cm-project",
+  "config": {
+    "bin-dir": "bin/"
+  },
+  "require": {
+    "cargomedia/cm": "~1.79.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~4.1.3",
+    "tomaszdurka/mocka": "~0.8.1"
+  },
+  "minimum-stability": "alpha",
+  "repositories": [
+    {
+      "packagist": false
+    },
+    {
+      "type": "composer",
+      "url": "http://satis.cargomedia.ch/dist"
+    }
+  ],
+  "autoload": {
+    "psr-0": {
+      "S3Export_": "library/S3Export/library/"
+    }
+  },
+  "extra": {
+    "cm-modules": {
+      "S3Export": {
+        "path": "library/S3Export/"
+      }
+    }
+  }
+}
