@@ -37,6 +37,38 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     public function mountDisk($devicePath) {
         var_dump($this->_mountDisk($devicePath));
     }
+add
+    /**
+     *
+     * @param string $devicePath
+     * @return null | string crypted file (JobID.tc)
+     *
+     *
+     */
+
+    private function _mountDisk($devicePath) {
+        $filesystemEncrypted = $this->_getFilesystemEncrypted();
+        $device_without_partition = preg_replace('/\d+$/', '', $devicePath);
+        $partitions_on_device = explode("\n", CM_Util::exec('lsblk', ['-nr', $device_without_partition]));
+        array_pop($partitions_on_device);
+        if (count($partitions_on_device) == 1) {
+            $this->_getStreamOutput()->writeln('Fixing the partition table...');
+            CM_Util::exec('sgdisk', ['--move-second-header', $device_without_partition]);
+        }
+        CM_Util::exec('mount', [$devicePath, $this->_getPathPrefix($this->_getFilesystemEncrypted())]);
+        $crypt_array = $filesystemEncrypted->listByPrefix('/', true);
+        if ($crypt_files = preg_grep('/\.tc/', $crypt_array['files'])) {
+            return basename(reset($crypt_files));
+        }
+    }
+
+    private function _decryptDisk($jobId, $truecryptPassword) {
+
+        CM_Util::exec('truecrypt', ['-p', $truecryptPassword, '--protect-hidden=no', '--keyfiles=""',
+                $this->_getPathPrefix($this->_getFilesystemEncrypted()) . $jobId,
+                $this->_getPathPrefix($this->_getFilesystemBackup())]);
+
+    }
 
     /**
      * @return CM_File_Filesystem
