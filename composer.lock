@@ -74,17 +74,17 @@
         },
         {
             "name": "cargomedia/cm",
-            "version": "1.79.7",
+            "version": "1.79.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cargomedia/CM.git",
-                "reference": "7eae0fdbbdf66d4f0a2e93b16367cb2e3a5108bb"
+                "reference": "e0f41e1ce21fcb3ddd74357ff54b82782a861939"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/cargomedia-cm-7eae0fdbbdf66d4f0a2e93b16367cb2e3a5108bb-zip-e41141.zip",
-                "reference": "7eae0fdbbdf66d4f0a2e93b16367cb2e3a5108bb",
-                "shasum": "5c961ab69e73e03bc12be62f74db8970ac2c1c37"
+                "url": "http://satis.cargomedia.ch/dist/dist/cargomedia-cm-e0f41e1ce21fcb3ddd74357ff54b82782a861939-zip-44cf4f.zip",
+                "reference": "e0f41e1ce21fcb3ddd74357ff54b82782a861939",
+                "shasum": "2870e050411aa4970b904adca5454efee6301683"
             },
             "require": {
                 "aws/aws-sdk-php": "~2.6.0",
@@ -128,7 +128,7 @@
             "license": [
                 "MIT"
             ],
-            "time": "2014-11-27 13:10:43"
+            "time": "2014-11-27 17:55:51"
         },
         {
             "name": "composer/composer",
@@ -995,7 +995,7 @@
         },
         {
             "name": "symfony/console",
-            "version": "v2.6.0-BETA2",
+            "version": "v2.6.0",
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
@@ -1052,18 +1052,18 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.6.0-BETA2",
+            "version": "v2.6.0",
             "target-dir": "Symfony/Component/EventDispatcher",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/EventDispatcher.git",
-                "reference": "0070add44a6d53f764f8254ed6e82078c3b07b14"
+                "reference": "697331d4ac78668cf6d21a2bb009b3faae92814f"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/symfony-event-dispatcher-0070add44a6d53f764f8254ed6e82078c3b07b14-zip-45d1b6.zip",
-                "reference": "0070add44a6d53f764f8254ed6e82078c3b07b14",
-                "shasum": "6220479c95a6b42222313c756e601785d2ecad18"
+                "url": "http://satis.cargomedia.ch/dist/dist/symfony-event-dispatcher-697331d4ac78668cf6d21a2bb009b3faae92814f-zip-538638.zip",
+                "reference": "697331d4ac78668cf6d21a2bb009b3faae92814f",
+                "shasum": "145ec70b90300013d2614acdbc993ebddfabf6bd"
             },
             "require": {
                 "php": ">=5.3.3"
@@ -1106,22 +1106,22 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "http://symfony.com",
-            "time": "2014-11-20 12:16:05"
+            "time": "2014-11-28 10:00:40"
         },
         {
             "name": "symfony/finder",
-            "version": "v2.6.0-BETA2",
+            "version": "v2.6.0",
             "target-dir": "Symfony/Component/Finder",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder.git",
-                "reference": "d556a66cbe5b2b81e7abc75b4066b057fbc7af94"
+                "reference": "d574347c652a14cfee0349f744c7880e1d9029fd"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/symfony-finder-d556a66cbe5b2b81e7abc75b4066b057fbc7af94-zip-ff4f80.zip",
-                "reference": "d556a66cbe5b2b81e7abc75b4066b057fbc7af94",
-                "shasum": "330f5f12a3122d5fecdeee5b81a926402760cde9"
+                "url": "http://satis.cargomedia.ch/dist/dist/symfony-finder-d574347c652a14cfee0349f744c7880e1d9029fd-zip-3c2cc9.zip",
+                "reference": "d574347c652a14cfee0349f744c7880e1d9029fd",
+                "shasum": "c077f0c5584b54edf690c9a3cdfd9f86240963c5"
             },
             "require": {
                 "php": ">=5.3.3"
@@ -1153,11 +1153,11 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "http://symfony.com",
-            "time": "2014-10-26 07:46:28"
+            "time": "2014-11-28 10:00:40"
         },
         {
             "name": "symfony/process",
-            "version": "v2.6.0-BETA2",
+            "version": "v2.6.0",
             "target-dir": "Symfony/Component/Process",
             "source": {
                 "type": "git",
@@ -1883,7 +1883,7 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.6.0-BETA2",
+            "version": "v2.6.0",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
