@@ -9,6 +9,10 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         $this->setServiceManager(CM_Service_Manager::getInstance());
     }
 
+    public function __destruct() {
+        $this->_cleanup();
+    }
+
     /**
      * @param string $devicePath
      * @param string $truecryptPassword
@@ -19,13 +23,17 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
             $truecryptImageFile = $this->_findTruecryptImageFile($filesystemBackupEncrypted);
             $filesystemBackup = $this->_decryptDisk($truecryptImageFile, $truecryptPassword);
             $filesystemOriginal = $this->_getFilesystemOriginal();
-
-            $this->_compareFilesystems($filesystemOriginal, $filesystemBackup, 1000);
         } catch (Exception $e) {
-            print('*** Excepshiawn !' . "\n");
-            print_r($e->getMessage());
+            print($e->getMessage());
             $this->_cleanup();
         }
+        $result = $this->_compareFilesystems($filesystemOriginal, $filesystemBackup, 10);
+        print "\nCheck completed\n";
+        print "Files checked: " . $result['files'] . "\n";
+        foreach ($result['errors'] as $errorType => $occurences) {
+            print $errorType . ": " . $occurences . "\n";
+        }
+        print ".\n";
     }
 
     public function foo() {
@@ -34,16 +42,29 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     }
 
     private function _cleanup() {
-        CM_Util::exec('truecrypt', ['-d']);
-        CM_Util::exec('umount', [$this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted())]);
+        try {
+            CM_Util::exec('truecrypt', ['-d']);
+            CM_Util::exec('umount', [$this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted())]);
+        } catch (Exception $ignored) {
+        }
     }
 
     /**
      * @param CM_File_Filesystem $filesystemOriginal
      * @param CM_File_Filesystem $filesystemBackup
      * @param int $fileCountMax
+     * @return array
      */
     private function _compareFilesystems(CM_File_Filesystem $filesystemOriginal, CM_File_Filesystem $filesystemBackup, $fileCountMax) {
+
+        $result = [
+            'errors' => [
+                'File not found on Backup' => 0,
+                'MD5 not computable on Source/Backup' => 0,
+                'Files differ' => 0,
+            ],
+            'files' => 0
+        ];
 
         /**
          * @param CM_File_Filesystem $filesystem
@@ -52,46 +73,44 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
          * @param int $fileCountMax
          * @return string[]
          */
-        function listFilesRecursively(CM_File_Filesystem $filesystem, $path, $fileCount, $fileCountMax) {
-            print_r("path: " . $path);
-            print "\n";
+        function listFilesRecursively(CM_File_Filesystem $filesystem, $path, $fileCount = 0, $fileCountMax) {
+            print ".";
             $pathList = $filesystem->listByPrefix($path, true);
             $fileList = $pathList['files'];
             $dirList = $pathList['dirs'];
-            shuffle($fileList);
             shuffle($dirList);
-
-            while (!empty($fileList) || count($fileList) < $fileCountMax) {
-                //check subdirs recursively
-                print ("gluglu\n");
-                print_r($fileList);
-                print "\n";
-                $dir = array_pop($dirList);
-                if (null !== $dir) {
-                    $fileListSubdir = listFilesRecursively($filesystem, $path . '/' . $dir, count($fileList), $fileCountMax);
-                    $fileList = array_merge($fileList, $fileListSubdir);
-                }
+            while (count($dirList) > 0 && $fileCount < $fileCountMax) {
+                $fileCount += count($fileList);
+                $fileListSub = listFilesRecursively($filesystem, '/' . array_pop($dirList) . '/', $fileCount, $fileCountMax);
+                $fileList = array_merge($fileListSub, $fileList);
             }
-
             return $fileList;
         }
 
         $filePathList = listFilesRecursively($filesystemOriginal, '/', 0, $fileCountMax);
-        foreach ($filePathList as $filePath) {
-        }
 
-        //        $pathList = $filesystemOriginal->listByPrefix('photo/390', true);
-        //        foreach ($pathList as $path) {
-        //            foreach ($path as $entry) {
-        //                $fileOriginal = new CM_File($entry, $filesystemOriginal);
-        //                print $entry . "\n";
-        //                print $filesystemOriginal->getChecksum($entry) . " < -- etag \n";
-        //            }
-        //        }
+        $result['files'] = count($filePathList);
+        foreach ($filePathList as $filePath) {
+            print $filePath ."\n";
+            $md5Backup = $md5Original = '';
+            $backupFile = new CM_File($filePath);
+            if (!$backupFile->exists()) {
+                $result['errors']['File not found on Backup']++;
+            }
+            try {
+                $md5Original = $filesystemOriginal->getChecksum($filePath);
+                $md5Backup = $filesystemBackup->getChecksum($filePath);
+            } catch (Exception $ohoh) {
+                $result['errors']['MD5 not computable on Source/Backup']++;
+            }
+            if ($md5Backup != $md5Original) {
+                $result['errors']['Files differ']++;
+            }
+        }
+        return $result;
     }
 
     /**
-     * @todo check if idempotent
      *
      * @param string $devicePath
      * @return CM_File_Filesystem
@@ -130,7 +149,6 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     }
 
     /**
-     * @todo check if idempotent
      * @param CM_File $truecryptImageFile
      * @param $truecryptPassword
      * @return CM_File_Filesystem
@@ -147,10 +165,9 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
             ]);
         } catch (CM_Exception $e) {
             if (preg_match('/The volume.+is already mounted/', $e->getMessage()) > 0) {
-                print "arredy maunted\n";
                 return $filesystemDecrypted;
             } else {
-                $this->_cleanup();
+                throw $e;
             }
         }
         return $filesystemDecrypted;
