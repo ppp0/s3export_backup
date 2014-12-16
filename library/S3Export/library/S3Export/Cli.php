@@ -10,7 +10,11 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     }
 
     public function __destruct() {
-        $this->_cleanup();
+        try {
+            CM_Util::exec('sudo truecrypt', ['-d']);
+            CM_Util::exec('sudo umount', [$this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted())]);
+        } catch (Exception $ignored) {
+        }
     }
 
     /**
@@ -25,7 +29,6 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
             $filesystemOriginal = $this->_getFilesystemOriginal();
         } catch (Exception $e) {
             print($e->getMessage());
-            $this->_cleanup();
         }
         $result = $this->_compareFilesystems($filesystemOriginal, $filesystemBackup, 10);
         print "\nCheck completed\n";
@@ -36,78 +39,23 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         print ".\n";
     }
 
-    public function foo() {
-        $filesystem = $this->_getFilesystemOriginal();
-        print_r($filesystem->listByPrefix('tmp', true));
+    public function cancelJob($jobId) {
+        $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
+        print_r($client->cancelJob(array(
+            'JobId' => $jobId,
+        )));
     }
 
-    private function _cleanup() {
-        try {
-            CM_Util::exec('truecrypt', ['-d']);
-            CM_Util::exec('umount', [$this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted())]);
-        } catch (Exception $ignored) {
-        }
+    public function listJobs() {
+        $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
+        print_r($client->listJobs());
     }
 
-    /**
-     * @param CM_File_Filesystem $filesystemOriginal
-     * @param CM_File_Filesystem $filesystemBackup
-     * @param int $fileCountMax
-     * @return array
-     */
-    private function _compareFilesystems(CM_File_Filesystem $filesystemOriginal, CM_File_Filesystem $filesystemBackup, $fileCountMax) {
-
-        $result = [
-            'errors' => [
-                'File not found on Backup' => 0,
-                'MD5 not computable on Source/Backup' => 0,
-                'Files differ' => 0,
-            ],
-            'files' => 0
-        ];
-
-        /**
-         * @param CM_File_Filesystem $filesystem
-         * @param string $path
-         * @param int $fileCount
-         * @param int $fileCountMax
-         * @return string[]
-         */
-        function listFilesRecursively(CM_File_Filesystem $filesystem, $path, $fileCount = 0, $fileCountMax) {
-            print ".";
-            $pathList = $filesystem->listByPrefix($path, true);
-            $fileList = $pathList['files'];
-            $dirList = $pathList['dirs'];
-            shuffle($dirList);
-            while (count($dirList) > 0 && $fileCount < $fileCountMax) {
-                $fileCount += count($fileList);
-                $fileListSub = listFilesRecursively($filesystem, '/' . array_pop($dirList) . '/', $fileCount, $fileCountMax);
-                $fileList = array_merge($fileListSub, $fileList);
-            }
-            return $fileList;
-        }
-
-        $filePathList = listFilesRecursively($filesystemOriginal, '/', 0, $fileCountMax);
-
-        $result['files'] = count($filePathList);
-        foreach ($filePathList as $filePath) {
-            print $filePath ."\n";
-            $md5Backup = $md5Original = '';
-            $backupFile = new CM_File($filePath);
-            if (!$backupFile->exists()) {
-                $result['errors']['File not found on Backup']++;
-            }
-            try {
-                $md5Original = $filesystemOriginal->getChecksum($filePath);
-                $md5Backup = $filesystemBackup->getChecksum($filePath);
-            } catch (Exception $ohoh) {
-                $result['errors']['MD5 not computable on Source/Backup']++;
-            }
-            if ($md5Backup != $md5Original) {
-                $result['errors']['Files differ']++;
-            }
-        }
-        return $result;
+    public function getStatus($jobId) {
+        $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
+        print_r($client->getStatus(array(
+            'JobId' => $jobId,
+        )));
     }
 
     /**
@@ -187,6 +135,26 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      */
     private function _getFilesystemBackupDecrypted() {
         return $this->getServiceManager()->get('s3export-filesystem-backup-decrypted', 'CM_File_Filesystem');
+    }
+
+    /**
+     *
+     * @param string $manifest
+     * @param bool $dryRun
+     * @return String awsJobId
+     */
+    private function _createAWSJob($manifest, $dryRun = true) {
+        $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
+        $apiResponse = $client->createJob(array(
+            'JobType' => 'Export',
+            'Manifest' => $manifest,
+            'ValidateOnly' => $dryRun,
+        ));
+        return $apiResponse;
+    }
+    
+    private function _getAWSClient($credentials) {
+        return Aws\ImportExport\ImportExportClient::factory($credentials);
     }
 
     /**
