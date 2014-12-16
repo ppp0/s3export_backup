@@ -10,7 +10,11 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     }
 
     public function __destruct() {
-        $this->_cleanup();
+        try {
+            CM_Util::exec('sudo truecrypt', ['-d']);
+            CM_Util::exec('sudo umount', [$this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted())]);
+        } catch (Exception $ignored) {
+        }
     }
 
     /**
@@ -21,9 +25,11 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     }
 
     /**
-     *
+     * @param string $device
+     * @param bool $confirm
+     * @throws CM_Exception_Invalid
      */
-    public function initDisk($device) {
+    public function initDisk($device, $confirm = false) {
         if (!preg_match('/\d+$/', $device)) {
             CM_Util::exec('sgdisk', ['-o', $device]);
             $startSector = CM_Util::exec('sgdisk', ['-F', $device]);
@@ -31,10 +37,9 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
             CM_Util::exec('sgdisk', ['-n', '1:' . $startSector . ':' . $endSector, $device]);
             $device = $device . '1';
         }
-//        CM_Util::exec('sudo mkfs', ['-t', 'ext4', '-m', '0', $device]);
-//        $mountpoint = $this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted());
-//        CM_Util::exec('sudo mount', [$device, $mountpoint]);
-$mountpoint = '/tmp/test';
+        CM_Util::exec('sudo mkfs', ['-t', 'ext4', '-m', '0', $device]);
+        $mountpoint = $this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted());
+        CM_Util::exec('sudo mount', [$device, $mountpoint]);
 
         $file = new CM_File(getcwd() . '/manifest');
         $manifest = $file->read();
@@ -45,7 +50,7 @@ $mountpoint = '/tmp/test';
             throw new CM_Exception_Invalid('Only file system EXT4 supported (manifest)');
         }
 
-        $apiResponse = $this->_createAWSJob($manifest, true);
+        $apiResponse = $this->_createAWSJob($manifest, !$confirm);
 
         $signatureFile = new CM_File($mountpoint . '/SIGNATURE');
         $signatureFile->write($apiResponse->get('SignatureFileContents'));
@@ -54,9 +59,7 @@ $mountpoint = '/tmp/test';
         print("---------------------\n");
         print('JobID: ' . $apiResponse->get('JobId') . "\n");
         print("\n\n");
-
     }
-
 
     public function cancelJob($jobId) {
         $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
@@ -97,45 +100,21 @@ $mountpoint = '/tmp/test';
         return Aws\ImportExport\ImportExportClient::factory($credentials);
     }
 
-    private function _cleanup() {
-        try {
-            CM_Util::exec('sudo truecrypt', ['-d']);
-            CM_Util::exec('sudo umount', [$this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted())]);
-        } catch (Exception $ignored) {
-            print $ignored->getMessage();
-        }
-    }
-
     /**
      * @return CM_File_Filesystem
      * @throws CM_Exception_Invalid
      */
-    private function _getFilesystemOriginal() {
-        return $this->getServiceManager()->get('s3export-filesystem-original', 'CM_File_Filesystem');
+    private function _getFilesystemBackupEncrypted() {
+        return $this->getServiceManager()->get('s3export-filesystem-backup-encrypted', 'CM_File_Filesystem');
     }
 
     /**
-     * @return CM_File_Filesystem
-     * @throws CM_Exception_Invalid
-     */
-    private function _getFilesystemBackup() {
-        return $this->getServiceManager()->get('s3export-filesystem-backup', 'CM_File_Filesystem');
-    }
-
-    /**
-     * @return CM_File_Filesystem
-     * @throws CM_Exception_Invalid
-     */
-    private function _getFilesystemEncrypted() {
-        return $this->getServiceManager()->get('s3export-filesystem-encrypted', 'CM_File_Filesystem');
-    }
-
-    /**
-     *
+     * @param CM_File_Filesystem $filesystem
      * @return string
      */
-    private function _getPathPrefix(CM_File_Filesystem $filesystem) {
-        return $filesystem->getAdapter()->getPathPrefix();
+    private function _getLocalFilesystemPath(CM_File_Filesystem $filesystem) {
+        $directory = new CM_File('/', $filesystem);
+        return $directory->getPathOnLocalFilesystem();
     }
 
     public static function getPackageName() {
