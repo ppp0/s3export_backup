@@ -9,14 +9,6 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         $this->setServiceManager(CM_Service_Manager::getInstance());
     }
 
-    public function __destruct() {
-        try {
-            CM_Util::exec('sudo truecrypt', ['-d']);
-            CM_Util::exec('sudo umount', [$this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted())]);
-        } catch (Exception $ignored) {
-        }
-    }
-
     /**
      * @param string $devicePath
      * @param string $truecryptPassword
@@ -29,7 +21,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      * @param bool $confirm
      * @throws CM_Exception_Invalid
      */
-    public function initDisk($device, $confirm = false) {
+    public function initDisk($manifestPath, $device, $confirm = false) {
         if (!preg_match('/\d+$/', $device)) {
             CM_Util::exec('sgdisk', ['-o', $device]);
             $startSector = CM_Util::exec('sgdisk', ['-F', $device]);
@@ -41,19 +33,21 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         $mountpoint = $this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted());
         CM_Util::exec('sudo mount', [$device, $mountpoint]);
 
-        $file = new CM_File(getcwd() . '/manifest');
+        $file = new CM_File($manifestPath);
         $manifest = $file->read();
         if (!preg_match('/fileSystem:(.*)/', $manifest, $matches)) {
             throw new CM_Exception_Invalid('Manifest file has not fileSystem field');
+            $this->_cleanup();
         }
         if (!$matches[1] == 'EXT4') {
             throw new CM_Exception_Invalid('Only file system EXT4 supported (manifest)');
+            $this->_cleanup();
         }
-
         $apiResponse = $this->_createAWSJob($manifest, !$confirm);
 
         $signatureFile = new CM_File($mountpoint . '/SIGNATURE');
         $signatureFile->write($apiResponse->get('SignatureFileContents'));
+        $this->_cleanup();
 
         print("\nCreate Job completed:\n");
         print("---------------------\n");
@@ -61,6 +55,9 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         print("\n\n");
     }
 
+    /**
+     * @param string $jobId
+     */
     public function cancelJob($jobId) {
         $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
         print_r($client->cancelJob(array(
@@ -73,6 +70,9 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         print_r($client->listJobs());
     }
 
+    /**
+     * @param string $jobId
+     */
     public function getStatus($jobId) {
         $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
         print_r($client->getStatus(array(
@@ -115,6 +115,15 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     private function _getLocalFilesystemPath(CM_File_Filesystem $filesystem) {
         $directory = new CM_File('/', $filesystem);
         return $directory->getPathOnLocalFilesystem();
+    }
+
+    private function _cleanup() {
+        try {
+            CM_Util::exec('sudo truecrypt', ['-d']);
+            CM_Util::exec('sudo umount', [$this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted())]);
+        } catch
+        (Exception $ignored) {
+        }
     }
 
     public static function getPackageName() {
