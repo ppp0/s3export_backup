@@ -20,10 +20,11 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     /**
      * @param string $device
      * @param bool $confirm
-     * @throws CM_Exception_Invalid
      */
-    public function initDisk($manifestPath, $device, $noFormat = false, $dryRun = false) {
-        if ($noFormat !== true) {
+    public function initDisk($manifestPath, $device, $noFormat = null, $dryRun = null) {
+        if (null === $dryRun) { $dryRun = false; }
+        if (null === $noFormat) { $noFormat = false; }
+        if ($noFormat != true) {
             if (!preg_match('/\d+$/', $device)) {
                 CM_Util::exec('sgdisk', ['-o', $device]);
                 $startSector = CM_Util::exec('sgdisk', ['-F', $device]);
@@ -52,14 +53,15 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         }
         $apiResponse = $this->_createAWSJob($manifest, $dryRun);
 
-        $signatureFile = new CM_File($mountpoint . '/SIGNATURE');
+        $signatureFile = new CM_File('SIGNATURE');
+        $signatureFile->joinPath($mountpoint);
         $signatureFile->write($apiResponse->get('SignatureFileContents'));
         $this->_cleanup();
 
-        print("\nCreate Job completed:\n");
-        print("---------------------\n");
-        print('JobID: ' . $apiResponse->get('JobId') . "\n");
-        print("\n\n");
+        $this->_getStreamOutput()->writeln('Create Job completed:');
+        $this->_getStreamOutput()->writeln('---------------------');
+        $this->_getStreamOutput()->writeln('JobID: ' . $apiResponse->get('JobId'));
+        $this->_getStreamOutput()->writeln('');
     }
 
     /**
@@ -93,7 +95,8 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      * @param bool $dryRun
      * @return \Guzzle\Service\Resource\Model
      */
-    private function _createAWSJob($manifest, $dryRun = true) {
+    private function _createAWSJob($manifest, $dryRun = null) {
+        if (null === $dryRun) { $dryRun = true; }
         $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
         $apiResponse = $client->createJob(array(
             'JobType' => 'Export',
@@ -113,7 +116,6 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
 
     /**
      * @return CM_File_Filesystem
-     * @throws CM_Exception_Invalid
      */
     private function _getFilesystemBackupEncrypted() {
         return $this->getServiceManager()->get('s3export-filesystem-backup-encrypted', 'CM_File_Filesystem');
