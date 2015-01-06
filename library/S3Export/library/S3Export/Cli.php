@@ -38,11 +38,17 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         CM_Util::exec('sudo mount', [$device, $mountpoint]);
 
         $file = new CM_File($manifestPath);
+
         if ($file->isDirectory()) {
             $this->_cleanup();
             throw new CM_Exception_Invalid('Manifest file expected, path to directory given');
         }
-        $manifest = $file->read();
+        try {
+            $manifest = $file->read();
+        } catch (CM_Exception $e) {
+            $this->_cleanup();
+            throw new CM_Exception_Invalid($e->getMessage());
+        }
         if (!preg_match('/fileSystem:(.*)/', $manifest, $matches)) {
             $this->_cleanup();
             throw new CM_Exception_Invalid('Manifest file has not fileSystem field');
@@ -95,14 +101,18 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      * @param bool $dryRun
      * @return \Guzzle\Service\Resource\Model
      */
-    private function _createAWSJob($manifest, $dryRun = null) {
-        if (null === $dryRun) { $dryRun = true; }
+    private function _createAWSJob($manifest, $dryRun) {
         $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
-        $apiResponse = $client->createJob(array(
-            'JobType' => 'Export',
-            'Manifest' => $manifest,
-            'ValidateOnly' => $dryRun,
-        ));
+        try {
+            $apiResponse = $client->createJob(array(
+                'JobType' => 'Export',
+                'Manifest' => $manifest,
+                'ValidateOnly' => ($dryRun == 'true'),
+            ));
+        } catch (Exception $e) {
+            $this->_cleanup();
+            throw $e;
+        }
         return $apiResponse;
     }
 
