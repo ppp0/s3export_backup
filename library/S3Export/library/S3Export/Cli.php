@@ -16,34 +16,41 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     public function verifyDisk($devicePath, $truecryptPassword) {
     }
 
+
     /**
      * @param string $device
      * @param bool $confirm
      * @throws CM_Exception_Invalid
      */
-    public function initDisk($manifestPath, $device, $confirm = false) {
-        if (!preg_match('/\d+$/', $device)) {
-            CM_Util::exec('sgdisk', ['-o', $device]);
-            $startSector = CM_Util::exec('sgdisk', ['-F', $device]);
-            $endSector = CM_Util::exec('sgdisk', ['-E', $device]);
-            CM_Util::exec('sgdisk', ['-n', '1:' . $startSector . ':' . $endSector, $device]);
-            $device = $device . '1';
+    public function initDisk($manifestPath, $device, $noFormat = false, $dryRun = false) {
+        if ($noFormat !== true) {
+            if (!preg_match('/\d+$/', $device)) {
+                CM_Util::exec('sgdisk', ['-o', $device]);
+                $startSector = CM_Util::exec('sgdisk', ['-F', $device]);
+                $endSector = CM_Util::exec('sgdisk', ['-E', $device]);
+                CM_Util::exec('sgdisk', ['-n', '1:' . $startSector . ':' . $endSector, $device]);
+                $device = $device . '1';
+            }
+            CM_Util::exec('sudo mkfs', ['-t', 'ext4', '-m', '0', $device]);
         }
-        CM_Util::exec('sudo mkfs', ['-t', 'ext4', '-m', '0', $device]);
         $mountpoint = $this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted());
         CM_Util::exec('sudo mount', [$device, $mountpoint]);
 
         $file = new CM_File($manifestPath);
+        if ($file->isDirectory()) {
+            $this->_cleanup();
+            throw new CM_Exception_Invalid('Manifest file expected, path to directory given');
+        }
         $manifest = $file->read();
         if (!preg_match('/fileSystem:(.*)/', $manifest, $matches)) {
-            throw new CM_Exception_Invalid('Manifest file has not fileSystem field');
             $this->_cleanup();
+            throw new CM_Exception_Invalid('Manifest file has not fileSystem field');
         }
         if (!$matches[1] == 'EXT4') {
-            throw new CM_Exception_Invalid('Only file system EXT4 supported (manifest)');
             $this->_cleanup();
+            throw new CM_Exception_Invalid('Only file system EXT4 supported (manifest)');
         }
-        $apiResponse = $this->_createAWSJob($manifest, !$confirm);
+        $apiResponse = $this->_createAWSJob($manifest, $dryRun);
 
         $signatureFile = new CM_File($mountpoint . '/SIGNATURE');
         $signatureFile->write($apiResponse->get('SignatureFileContents'));
@@ -84,7 +91,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      *
      * @param string $manifest
      * @param bool $dryRun
-     * @return String awsJobId
+     * @return \Guzzle\Service\Resource\Model
      */
     private function _createAWSJob($manifest, $dryRun = true) {
         $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
@@ -96,6 +103,10 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         return $apiResponse;
     }
 
+    /**
+     * @param array $credentials
+     * @return \Aws\ImportExport\ImportExportClient
+     */
     private function _getAWSClient($credentials) {
         return Aws\ImportExport\ImportExportClient::factory($credentials);
     }
