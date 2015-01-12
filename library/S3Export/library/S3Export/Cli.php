@@ -20,6 +20,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     /**
      * @param string $device
      * @param bool $confirm
+     * @synchronized
      */
     public function initDisk($manifestPath, $device, $noFormat = null, $dryRun = null) {
         if (null === $dryRun) { $dryRun = false; }
