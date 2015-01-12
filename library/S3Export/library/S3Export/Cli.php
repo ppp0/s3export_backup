@@ -40,21 +40,21 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         $file = new CM_File($manifestPath);
 
         if ($file->isDirectory()) {
-            $this->_cleanup();
+            $this->_unmount();
             throw new CM_Exception_Invalid('Manifest file expected, path to directory given');
         }
         try {
             $manifest = $file->read();
         } catch (CM_Exception $e) {
-            $this->_cleanup();
+            $this->_unmount();
             throw new CM_Exception_Invalid($e->getMessage());
         }
         if (!preg_match('/fileSystem:(.*)/', $manifest, $matches)) {
-            $this->_cleanup();
+            $this->_unmount();
             throw new CM_Exception_Invalid('Manifest file has not fileSystem field');
         }
         if (!$matches[1] == 'EXT4') {
-            $this->_cleanup();
+            $this->_unmount();
             throw new CM_Exception_Invalid('Only file system EXT4 supported (manifest)');
         }
         $apiResponse = $this->_createAWSJob($manifest, $dryRun);
@@ -62,7 +62,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         $signatureFile = new CM_File('SIGNATURE');
         $signatureFile->joinPath($mountpoint);
         $signatureFile->write($apiResponse->get('SignatureFileContents'));
-        $this->_cleanup();
+        $this->_unmount();
 
         $this->_getStreamOutput()->writeln('Create Job completed:');
         $this->_getStreamOutput()->writeln('---------------------');
@@ -110,7 +110,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
                 'ValidateOnly' => ($dryRun == 'true'),
             ));
         } catch (Exception $e) {
-            $this->_cleanup();
+            $this->_unmount();
             throw $e;
         }
         return $apiResponse;
@@ -140,7 +140,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         return $directory->getPathOnLocalFilesystem();
     }
 
-    private function _cleanup() {
+    private function _unmount() {
         try {
             CM_Util::exec('sudo truecrypt', ['-d']);
             CM_Util::exec('sudo umount', [$this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted())]);
