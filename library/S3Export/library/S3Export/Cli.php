@@ -30,42 +30,27 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         $skipFormat = (bool) $skipFormat;
         $dryRun = (bool) $dryRun;
 
+
+        $this->_getStreamOutput()->writeln('Preparing backup device');
         $device = new S3Export_Device($deviceName);
         if (!$skipFormat) {
             $device->format();
         }
         $device->mount('/media/s3disk_crypted');
 
+
         $manifest = new S3Export_AwsBackupManifest();
         $manifest->setDeviceData($this->_gatherDeviceData());
-
         $awsBackupManager = new S3Export_BackupManager();
+        $this->_getStreamOutput()->writeln('Creating AWS backup job');
         $job = $awsBackupManager->createJob($manifest, $dryRun);
+        $this->_getStreamOutput()->writeln("Job created. ID: `{$job->getId()}`");
+
+
+        $this->_getStreamOutput()->writeln('Storing AWS Signature on backup device');
         $awsBackupManager->storeJobSignatureOnDevice($job, $device);
 
         $device->unmount();
-
-        $this->_getStreamOutput()->writeln('Create Job completed:');
-        $this->_getStreamOutput()->writeln('---------------------');
-        $this->_getStreamOutput()->writeln('JobID: ' . $job->getId());
-        $this->_getStreamOutput()->writeln('');
-    }
-
-    /**
-     * @return array
-     */
-    private function _gatherDeviceData() {
-        $deviceId = $this->_getStreamInput()->read('Provide device ID');
-        $cacheKey = 'DeviceData' . $deviceId;
-        $cache = new CM_Cache_Storage_File();
-        if (false === ($deviceData = $cache->get($cacheKey))) {
-            $this->_getStreamOutput()->writeln('Device not found. Please provide required manifest data.');
-            $deviceData = [
-                'countryOfOrigin' => $this->_getStreamInput()->read('Country of origin?'),
-            ];
-            $cache->set($cacheKey, $deviceData);
-        }
-        return $deviceData;
     }
 
     /**
@@ -100,6 +85,23 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      */
     private function _getAWSClient($credentials) {
         return Aws\ImportExport\ImportExportClient::factory($credentials);
+    }
+
+    /**
+     * @return array
+     */
+    private function _gatherDeviceData() {
+        $deviceId = $this->_getStreamInput()->read('Provide device ID');
+        $cacheKey = 'DeviceData' . $deviceId;
+        $cache = new CM_Cache_Storage_File();
+        if (false === ($deviceData = $cache->get($cacheKey))) {
+            $this->_getStreamOutput()->writeln('Device not found. Please provide required manifest data.');
+            $deviceData = [
+                'countryOfOrigin' => $this->_getStreamInput()->read('Country of origin?'),
+            ];
+            $cache->set($cacheKey, $deviceData);
+        }
+        return $deviceData;
     }
 
     public static function getPackageName() {
