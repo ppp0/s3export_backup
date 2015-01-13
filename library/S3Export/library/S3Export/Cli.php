@@ -17,8 +17,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     }
 
     /**
-     * @param string    $manifestPath
-     * @param string    $device
+     * @param string    $deviceName
      * @param bool|null $skipFormat
      * @param bool|null $dryRun
      * @throws CM_Exception
@@ -26,49 +25,30 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      * @throws Exception
      * @internal param bool $confirm
      */
-    public function initDisk($manifestPath, $device, $skipFormat = null, $dryRun = null) {
-        $manifestPath = (string) $manifestPath;
-        $device = (string) $device;
+    public function initDisk($deviceName, $skipFormat = null, $dryRun = null) {
+        $deviceName = (string) $deviceName;
         $skipFormat = (bool) $skipFormat;
         $dryRun = (bool) $dryRun;
 
-        $deviceData = $this->_gatherDeviceData();
-        $manifest = $this->_createAWSManifest($deviceData);
+        $device = new S3Export_Device($deviceName);
+        if (!$skipFormat) {
+            $device->format();
+        }
+        $device->mount('/media/s3disk_crypted');
 
-        $apiResponse = $this->_createAWSJob($manifest, $dryRun);
-        $this->_prepareDevice($device, $apiResponse->get('SignatureFileContents'), !$skipFormat);
+        $manifest = new S3Export_AwsBackupManifest();
+        $manifest->setDeviceData($this->_gatherDeviceData());
 
-        $signatureFile = new CM_File('SIGNATURE');
-        $signatureFile->joinPath($mountpoint);
-        $signatureFile->write();
-        $this->_unmount();
+        $awsBackupManager = new S3Export_BackupManager();
+        $job = $awsBackupManager->createJob($manifest, $dryRun);
+        $awsBackupManager->storeJobSignatureOnDevice($job, $device);
+
+        $device->unmount();
 
         $this->_getStreamOutput()->writeln('Create Job completed:');
         $this->_getStreamOutput()->writeln('---------------------');
-        $this->_getStreamOutput()->writeln('JobID: ' . $apiResponse->get('JobId'));
+        $this->_getStreamOutput()->writeln('JobID: ' . $job->getId());
         $this->_getStreamOutput()->writeln('');
-    }
-
-    private function _formatDevice($device) {
-        if (!preg_match('/\d+$/', $device)) {
-            CM_Util::exec('sgdisk', ['-o', $device]);
-            $startSector = CM_Util::exec('sgdisk', ['-F', $device]);
-            $endSector = CM_Util::exec('sgdisk', ['-E', $device]);
-            CM_Util::exec('sgdisk', ['-n', '1:' . $startSector . ':' . $endSector, $device]);
-            $device = $device . '1';
-        }
-        CM_Util::exec('sudo mkfs', ['-t', 'ext4', '-m', '0', $device]);
-    }
-
-    /**
-     * @param string $device
-     * @param string $awsSignature
-     * @throws CM_Exception
-     */
-    private function _prepareDevice($device, $awsSignature) {
-        $mountpoint = $this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted());
-        CM_Util::exec('sudo mount', [$device, $mountpoint]);
-
     }
 
     /**
@@ -92,6 +72,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      * @param string $jobId
      */
     public function cancelJob($jobId) {
+
         $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
         print_r($client->cancelJob(array(
             'JobId' => $jobId,
@@ -114,57 +95,11 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     }
 
     /**
-     *
-     * @param string $manifest
-     * @param bool   $dryRun
-     * @return \Guzzle\Service\Resource\Model
-     */
-    private function _createAWSJob($manifest, $dryRun) {
-        $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
-        try {
-            $apiResponse = $client->createJob(array(
-                'JobType'      => 'Export',
-                'Manifest'     => $manifest,
-                'ValidateOnly' => $dryRun,
-            ));
-        } catch (Exception $e) {
-            $this->_unmount();
-            throw $e;
-        }
-        return $apiResponse;
-    }
-
-    /**
      * @param array $credentials
      * @return \Aws\ImportExport\ImportExportClient
      */
     private function _getAWSClient($credentials) {
         return Aws\ImportExport\ImportExportClient::factory($credentials);
-    }
-
-    /**
-     * @return CM_File_Filesystem
-     */
-    private function _getFilesystemBackupEncrypted() {
-        return $this->getServiceManager()->get('s3export-filesystem-backup-encrypted', 'CM_File_Filesystem');
-    }
-
-    /**
-     * @param CM_File_Filesystem $filesystem
-     * @return string
-     */
-    private function _getLocalFilesystemPath(CM_File_Filesystem $filesystem) {
-        $directory = new CM_File('/', $filesystem);
-        return $directory->getPathOnLocalFilesystem();
-    }
-
-    private function _unmount() {
-        try {
-            CM_Util::exec('sudo truecrypt', ['-d']);
-            CM_Util::exec('sudo umount', [$this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted())]);
-        } catch
-        (Exception $ignored) {
-        }
     }
 
     public static function getPackageName() {
