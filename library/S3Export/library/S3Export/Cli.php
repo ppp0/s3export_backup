@@ -29,7 +29,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         $deviceName = (string) $deviceName;
         $skipFormat = (bool) $skipFormat;
         $dryRun = (bool) $dryRun;
-
+        $awsBackupManager = $this->_getBackupManager();
 
         $this->_getStreamOutput()->writeln('Preparing backup device');
         $device = new S3Export_Device($deviceName);
@@ -38,14 +38,11 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         }
         $device->mount('/media/s3disk_crypted');
 
-
         $manifest = new S3Export_AwsBackupManifest();
         $manifest->setDeviceData($this->_gatherDeviceData());
-        $awsBackupManager = new S3Export_BackupManager();
         $this->_getStreamOutput()->writeln('Creating AWS backup job');
         $job = $awsBackupManager->createJob($manifest, $dryRun);
         $this->_getStreamOutput()->writeln("Job created. ID: `{$job->getId()}`");
-
 
         $this->_getStreamOutput()->writeln('Storing AWS Signature on backup device');
         $awsBackupManager->storeJobSignatureOnDevice($job, $device);
@@ -57,40 +54,28 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      * @param string $jobId
      */
     public function cancelJob($jobId) {
-
-        $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
-        print_r($client->cancelJob(array(
+        print_r($this->_getBackupManager()->getClient()->cancelJob(array(
             'JobId' => $jobId,
         )));
     }
 
     public function listJobs() {
-        $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
-        print_r($client->listJobs());
+        print_r($this->_getBackupManager()->getClient()->listJobs());
     }
 
     /**
      * @param string $jobId
      */
     public function getStatus($jobId) {
-        $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
-        print_r($client->getStatus(array(
+        print_r($this->_getBackupManager()->getClient()->getStatus(array(
             'JobId' => $jobId,
         )));
     }
 
     /**
-     * @param array $credentials
-     * @return \Aws\ImportExport\ImportExportClient
-     */
-    private function _getAWSClient($credentials) {
-        return Aws\ImportExport\ImportExportClient::factory($credentials);
-    }
-
-    /**
      * @return array
      */
-    private function _gatherDeviceData() {
+    protected function _gatherDeviceData() {
         $deviceId = $this->_getStreamInput()->read('Provide device ID');
         $cacheKey = 'DeviceData' . $deviceId;
         $cache = new CM_Cache_Storage_File();
@@ -102,6 +87,14 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
             $cache->set($cacheKey, $deviceData);
         }
         return $deviceData;
+    }
+
+    /**
+     * @return S3Export_BackupManager
+     * @throws CM_Exception_Invalid
+     */
+    protected function _getBackupManager() {
+        return CM_Service_Manager::getInstance()->get('s3export-backup-manager');
     }
 
     public static function getPackageName() {

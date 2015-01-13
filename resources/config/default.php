@@ -1,6 +1,11 @@
 <?php
 
 return function (CM_Config_Node $config) {
+    $awsCredentials = array(
+        'key'    => 'AKIAJIG66RZ2CETFJPPQ',
+        'secret' => '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',
+    );
+
     $config->debug = true;
 
     $config->services['s3export-filesystem-original'] = array(
@@ -29,4 +34,11 @@ return function (CM_Config_Node $config) {
                 )
             ),
         ));
+
+    $config->services['s3export-backup-manager'] = [
+        'class'     => 'S3Export_BackupManager',
+        'arguments' => [
+            $awsCredentials,
+        ]
+    ];
 };

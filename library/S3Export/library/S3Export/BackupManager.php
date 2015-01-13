@@ -5,9 +5,18 @@ class S3Export_BackupManager {
     /** @var \Aws\ImportExport\ImportExportClient */
     private $client;
 
-    public function __construct() {
-        $credentials = CM_Config::get()->awsCredentials;
+    /**
+     * @param array $credentials
+     */
+    public function __construct(array $credentials) {
         $this->client = Aws\ImportExport\ImportExportClient::factory($credentials);
+    }
+
+    /**
+     * @return \Aws\ImportExport\ImportExportClient
+     */
+    public function getClient() {
+        return $this->client;
     }
 
     /**
@@ -27,7 +36,7 @@ class S3Export_BackupManager {
 
     /**
      * @param S3Export_AwsBackupJob $job
-     * @param S3Export_Device             $device
+     * @param S3Export_Device       $device
      */
     public function storeJobSignatureOnDevice(S3Export_AwsBackupJob $job, S3Export_Device $device) {
         $file = new CM_File('SIGNATURE', $device->getFilesystem());
