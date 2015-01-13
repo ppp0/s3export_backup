@@ -16,58 +16,76 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     public function verifyDisk($devicePath, $truecryptPassword) {
     }
 
-
     /**
-     * @param string $device
-     * @param bool $confirm
+     * @param string    $manifestPath
+     * @param string    $device
+     * @param bool|null $skipFormat
+     * @param bool|null $dryRun
+     * @throws CM_Exception
+     * @throws CM_Exception_Invalid
+     * @throws Exception
+     * @internal param bool $confirm
      */
-    public function initDisk($manifestPath, $device, $noFormat = null, $dryRun = null) {
-        if (null === $dryRun) { $dryRun = false; }
-        if (null === $noFormat) { $noFormat = false; }
-        if ($noFormat != true) {
-            if (!preg_match('/\d+$/', $device)) {
-                CM_Util::exec('sgdisk', ['-o', $device]);
-                $startSector = CM_Util::exec('sgdisk', ['-F', $device]);
-                $endSector = CM_Util::exec('sgdisk', ['-E', $device]);
-                CM_Util::exec('sgdisk', ['-n', '1:' . $startSector . ':' . $endSector, $device]);
-                $device = $device . '1';
-            }
-            CM_Util::exec('sudo mkfs', ['-t', 'ext4', '-m', '0', $device]);
-        }
-        $mountpoint = $this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted());
-        CM_Util::exec('sudo mount', [$device, $mountpoint]);
+    public function initDisk($manifestPath, $device, $skipFormat = null, $dryRun = null) {
+        $manifestPath = (string) $manifestPath;
+        $device = (string) $device;
+        $skipFormat = (bool) $skipFormat;
+        $dryRun = (bool) $dryRun;
 
-        $file = new CM_File($manifestPath);
+        $deviceData = $this->_gatherDeviceData();
+        $manifest = $this->_createAWSManifest($deviceData);
 
-        if ($file->isDirectory()) {
-            $this->_unmount();
-            throw new CM_Exception_Invalid('Manifest file expected, path to directory given');
-        }
-        try {
-            $manifest = $file->read();
-        } catch (CM_Exception $e) {
-            $this->_unmount();
-            throw new CM_Exception_Invalid($e->getMessage());
-        }
-        if (!preg_match('/fileSystem:(.*)/', $manifest, $matches)) {
-            $this->_unmount();
-            throw new CM_Exception_Invalid('Manifest file has not fileSystem field');
-        }
-        if (!$matches[1] == 'EXT4') {
-            $this->_unmount();
-            throw new CM_Exception_Invalid('Only file system EXT4 supported (manifest)');
-        }
         $apiResponse = $this->_createAWSJob($manifest, $dryRun);
+        $this->_prepareDevice($device, $apiResponse->get('SignatureFileContents'), !$skipFormat);
 
         $signatureFile = new CM_File('SIGNATURE');
         $signatureFile->joinPath($mountpoint);
-        $signatureFile->write($apiResponse->get('SignatureFileContents'));
+        $signatureFile->write();
         $this->_unmount();
 
         $this->_getStreamOutput()->writeln('Create Job completed:');
         $this->_getStreamOutput()->writeln('---------------------');
         $this->_getStreamOutput()->writeln('JobID: ' . $apiResponse->get('JobId'));
         $this->_getStreamOutput()->writeln('');
+    }
+
+    private function _formatDevice($device) {
+        if (!preg_match('/\d+$/', $device)) {
+            CM_Util::exec('sgdisk', ['-o', $device]);
+            $startSector = CM_Util::exec('sgdisk', ['-F', $device]);
+            $endSector = CM_Util::exec('sgdisk', ['-E', $device]);
+            CM_Util::exec('sgdisk', ['-n', '1:' . $startSector . ':' . $endSector, $device]);
+            $device = $device . '1';
+        }
+        CM_Util::exec('sudo mkfs', ['-t', 'ext4', '-m', '0', $device]);
+    }
+
+    /**
+     * @param string $device
+     * @param string $awsSignature
+     * @throws CM_Exception
+     */
+    private function _prepareDevice($device, $awsSignature) {
+        $mountpoint = $this->_getLocalFilesystemPath($this->_getFilesystemBackupEncrypted());
+        CM_Util::exec('sudo mount', [$device, $mountpoint]);
+
+    }
+
+    /**
+     * @return array
+     */
+    private function _gatherDeviceData() {
+        $deviceId = $this->_getStreamInput()->read('Provide device ID');
+        $cacheKey = 'DeviceData' . $deviceId;
+        $cache = new CM_Cache_Storage_File();
+        if (false === ($deviceData = $cache->get($cacheKey))) {
+            $this->_getStreamOutput()->writeln('Device not found. Please provide required manifest data.');
+            $deviceData = [
+                'countryOfOrigin' => $this->_getStreamInput()->read('Country of origin?'),
+            ];
+            $cache->set($cacheKey, $deviceData);
+        }
+        return $deviceData;
     }
 
     /**
@@ -98,16 +116,16 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     /**
      *
      * @param string $manifest
-     * @param bool $dryRun
+     * @param bool   $dryRun
      * @return \Guzzle\Service\Resource\Model
      */
     private function _createAWSJob($manifest, $dryRun) {
         $client = $this->_getAWSClient(CM_Config::get()->awsCredentials);
         try {
             $apiResponse = $client->createJob(array(
-                'JobType' => 'Export',
-                'Manifest' => $manifest,
-                'ValidateOnly' => ($dryRun == 'true'),
+                'JobType'      => 'Export',
+                'Manifest'     => $manifest,
+                'ValidateOnly' => $dryRun,
             ));
         } catch (Exception $e) {
             $this->_unmount();
