@@ -28,18 +28,18 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     }
 
     /**
-     * @param string    $deviceName
+     * @param string    $devicePath
      * @param bool|null $skipFormat
      * @param bool|null $dryRun
      */
-    public function createJob($deviceName, $skipFormat = null, $dryRun = null) {
-        $deviceName = (string) $deviceName;
+    public function createJob($devicePath, $skipFormat = null, $dryRun = null) {
+        $devicePath = (string) $devicePath;
         $skipFormat = (bool) $skipFormat;
         $dryRun = (bool) $dryRun;
         $awsBackupManager = $this->_getBackupManager();
 
         $this->_getStreamOutput()->writeln('Preparing backup device');
-        $device = new S3Export_Device($deviceName);
+        $device = new S3Export_Device($devicePath);
         if (!$skipFormat) {
             $device->format();
         }

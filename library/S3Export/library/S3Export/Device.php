@@ -3,16 +3,16 @@
 class S3Export_Device {
 
     /** @var string */
-    private $_deviceName;
+    private $path;
 
     /** @var string */
     private $_mountpoint;
 
     /**
-     * @param string $deviceName
+     * @param string $path
      */
-    public function __construct($deviceName) {
-        $this->_deviceName = (string) $deviceName;
+    public function __construct($path) {
+        $this->path = (string) $path;
     }
 
     /**
@@ -21,7 +21,7 @@ class S3Export_Device {
      */
     public function mount($mountpoint) {
         $this->_mountpoint = (string) $mountpoint;
-        CM_Util::exec('sudo mount', [$this->_deviceName, $this->_mountpoint]);
+        CM_Util::exec('sudo mount', [$this->path, $this->_mountpoint]);
     }
 
     public function unmount() {
@@ -37,14 +37,14 @@ class S3Export_Device {
         if (!$this->_isPartitioned()) {
             $this->_partition();
         }
-        CM_Util::exec('sudo mkfs', ['-t', 'ext4', '-m', '0', $this->_deviceName]);
+        CM_Util::exec('sudo mkfs', ['-t', 'ext4', '-m', '0', $this->path]);
     }
 
     /**
      * @return string
      */
-    public function getDeviceName() {
-        return $this->_deviceName;
+    public function getPath() {
+        return $this->path;
     }
 
     /**
@@ -60,14 +60,14 @@ class S3Export_Device {
      * @return bool
      */
     protected function _isPartitioned() {
-        return (bool) preg_match('/\d+$/', $this->_deviceName);
+        return (bool) preg_match('/\d+$/', $this->path);
     }
 
     protected function _partition() {
-        CM_Util::exec('sgdisk', ['-o', $this->_deviceName]);
-        $startSector = CM_Util::exec('sgdisk', ['-F', $this->_deviceName]);
-        $endSector = CM_Util::exec('sgdisk', ['-E', $this->_deviceName]);
-        CM_Util::exec('sgdisk', ['-n', '1:' . $startSector . ':' . $endSector, $this->_deviceName]);
-        $this->_deviceName .= '1';
+        CM_Util::exec('sgdisk', ['-o', $this->path]);
+        $startSector = CM_Util::exec('sgdisk', ['-F', $this->path]);
+        $endSector = CM_Util::exec('sgdisk', ['-E', $this->path]);
+        CM_Util::exec('sgdisk', ['-n', '1:' . $startSector . ':' . $endSector, $this->path]);
+        $this->path .= '1';
     }
 }
