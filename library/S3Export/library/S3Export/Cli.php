@@ -9,6 +9,17 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         $this->setServiceManager(CM_Service_Manager::getInstance());
     }
 
+    public function listJobs() {
+        $this->_getStreamOutput()->writeln(print_r($this->_getBackupManager()->listJobs(), true));
+    }
+
+    /**
+     * @param string $jobId
+     */
+    public function getStatus($jobId) {
+        $this->_getStreamOutput()->writeln(print_r($this->_getBackupManager()->getJobStatus($jobId), true));
+    }
+
     /**
      * @param string $devicePath
      * @param string $truecryptPassword
@@ -20,12 +31,8 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      * @param string    $deviceName
      * @param bool|null $skipFormat
      * @param bool|null $dryRun
-     * @throws CM_Exception
-     * @throws CM_Exception_Invalid
-     * @throws Exception
-     * @internal param bool $confirm
      */
-    public function initDisk($deviceName, $skipFormat = null, $dryRun = null) {
+    public function createJob($deviceName, $skipFormat = null, $dryRun = null) {
         $deviceName = (string) $deviceName;
         $skipFormat = (bool) $skipFormat;
         $dryRun = (bool) $dryRun;
@@ -54,22 +61,8 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      * @param string $jobId
      */
     public function cancelJob($jobId) {
-        print_r($this->_getBackupManager()->getClient()->cancelJob(array(
-            'JobId' => $jobId,
-        )));
-    }
-
-    public function listJobs() {
-        print_r($this->_getBackupManager()->getClient()->listJobs());
-    }
-
-    /**
-     * @param string $jobId
-     */
-    public function getStatus($jobId) {
-        print_r($this->_getBackupManager()->getClient()->getStatus(array(
-            'JobId' => $jobId,
-        )));
+        $this->_getBackupManager()->cancelJob($jobId);
+        $this->_getStreamOutput()->writeln('Job successfully cancelled');
     }
 
     /**
