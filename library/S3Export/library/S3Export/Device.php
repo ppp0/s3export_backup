@@ -25,12 +25,7 @@ class S3Export_Device {
     }
 
     public function unmount() {
-        try {
-            CM_Util::exec('sudo truecrypt', ['-d']);
-            CM_Util::exec('sudo umount', [$this->_mountpoint]);
-        } catch
-        (Exception $ignored) {
-        }
+        CM_Util::exec('sudo umount', [$this->_mountpoint]);
     }
 
     public function format() {
