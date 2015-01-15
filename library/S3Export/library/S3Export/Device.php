@@ -3,7 +3,7 @@
 class S3Export_Device {
 
     /** @var string */
-    private $path;
+    private $_path;
 
     /** @var string */
     private $_mountpoint;
@@ -12,7 +12,7 @@ class S3Export_Device {
      * @param string $path
      */
     public function __construct($path) {
-        $this->path = (string) $path;
+        $this->_path = (string) $path;
     }
 
     /**
@@ -21,7 +21,7 @@ class S3Export_Device {
      */
     public function mount($mountpoint) {
         $this->_mountpoint = (string) $mountpoint;
-        CM_Util::exec('sudo mount', [$this->path, $this->_mountpoint]);
+        CM_Util::exec('sudo mount', [$this->_path, $this->_mountpoint]);
     }
 
     public function unmount() {
@@ -37,14 +37,14 @@ class S3Export_Device {
         if (!$this->_isPartitioned()) {
             $this->_partition();
         }
-        CM_Util::exec('sudo mkfs', ['-t', 'ext4', '-m', '0', $this->path]);
+        CM_Util::exec('sudo mkfs', ['-t', 'ext4', '-m', '0', $this->_path]);
     }
 
     /**
      * @return string
      */
     public function getPath() {
-        return $this->path;
+        return $this->_path;
     }
 
     /**
@@ -60,14 +60,14 @@ class S3Export_Device {
      * @return bool
      */
     protected function _isPartitioned() {
-        return (bool) preg_match('/\d+$/', $this->path);
+        return (bool) preg_match('/\d+$/', $this->_path);
     }
 
     protected function _partition() {
-        CM_Util::exec('sgdisk', ['-o', $this->path]);
-        $startSector = CM_Util::exec('sgdisk', ['-F', $this->path]);
-        $endSector = CM_Util::exec('sgdisk', ['-E', $this->path]);
-        CM_Util::exec('sgdisk', ['-n', '1:' . $startSector . ':' . $endSector, $this->path]);
-        $this->path .= '1';
+        CM_Util::exec('sgdisk', ['-o', $this->_path]);
+        $startSector = CM_Util::exec('sgdisk', ['-F', $this->_path]);
+        $endSector = CM_Util::exec('sgdisk', ['-E', $this->_path]);
+        CM_Util::exec('sgdisk', ['-n', '1:' . $startSector . ':' . $endSector, $this->_path]);
+        $this->_path .= '1';
     }
 }
