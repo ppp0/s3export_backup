@@ -3,13 +3,13 @@
 class S3Export_BackupManager {
 
     /** @var \Aws\ImportExport\ImportExportClient */
-    private $client;
+    private $_client;
 
     /**
      * @param array $credentials
      */
     public function __construct(array $credentials) {
-        $this->client = Aws\ImportExport\ImportExportClient::factory($credentials);
+        $this->_client = Aws\ImportExport\ImportExportClient::factory($credentials);
     }
 
     /**
@@ -18,7 +18,7 @@ class S3Export_BackupManager {
      * @return S3Export_AwsBackupJob
      */
     public function createJob($manifest, $dryRun = null) {
-        $apiResponse = $this->client->createJob(array(
+        $apiResponse = $this->_client->createJob(array(
             'JobType'      => 'Export',
             'Manifest'     => (string) $manifest,
             'ValidateOnly' => (bool) $dryRun,
@@ -61,6 +61,6 @@ class S3Export_BackupManager {
      * @return \Aws\ImportExport\ImportExportClient
      */
     protected function _getClient() {
-        return $this->client;
+        return $this->_client;
     }
 }
