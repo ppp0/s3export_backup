@@ -48,7 +48,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         if (!$skipFormat) {
             $device->format();
         }
-        $device->mount('/media/s3disk_crypted');
+        $device->mount();
 
         $this->_getStreamOutput()->writeln('Creating AWS backup job');
         $manifestFile = new CM_File($manifestPath);

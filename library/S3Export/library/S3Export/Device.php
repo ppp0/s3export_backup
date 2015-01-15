@@ -16,11 +16,11 @@ class S3Export_Device {
     }
 
     /**
-     * @param string $mountpoint
      * @throws CM_Exception
      */
-    public function mount($mountpoint) {
-        $this->_mountpoint = (string) $mountpoint;
+    public function mount() {
+        $tmpDir = CM_File::createTmpDir();
+        $this->_mountpoint = (string) $tmpDir->getPathOnLocalFilesystem();
         CM_Util::exec('sudo mount', [$this->_path, $this->_mountpoint]);
     }
 
