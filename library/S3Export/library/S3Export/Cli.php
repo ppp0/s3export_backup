@@ -9,65 +9,71 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         $this->setServiceManager(CM_Service_Manager::getInstance());
     }
 
+    public function listJobs() {
+        $this->_getStreamOutput()->writeln(print_r($this->_getBackupManager()->listJobs(), true));
+    }
+
+    /**
+     * @param string $jobId
+     */
+    public function getStatus($jobId) {
+        $this->_getStreamOutput()->writeln(print_r($this->_getBackupManager()->getJobStatus($jobId), true));
+    }
+
     /**
      * @param string $devicePath
      * @param string $truecryptPassword
      */
     public function verifyDisk($devicePath, $truecryptPassword) {
+    }
 
-        if ($jobId = $this->_mountDisk($devicePath)) {
-            $this->_decryptDisk($jobId, $truecryptPassword);
+    /**
+     * @param           $manifestPath
+     * @param string    $devicePath
+     * @param bool|null $skipFormat
+     * @param bool|null $dryRun
+     */
+    public function createJob($manifestPath, $devicePath, $skipFormat = null, $dryRun = null) {
+        $manifestPath = (string) $manifestPath;
+        if (!preg_match('/^\//', $manifestPath)) {
+            $manifestPath = getcwd() . '/' . $manifestPath;
         }
-        // randomly traverse decrypted partition and compare with S3
-        $filesystemOriginal = $this->_getFilesystemOriginal();
-        $pathList = $filesystemOriginal->listByPrefix('photo/390', true);
-        foreach ($pathList as $path) {
-            foreach ($path as $entry) {
-                $fileOriginal = new CM_File($entry, $filesystemOriginal);
-                print $entry . "\n";
-                print $filesystemOriginal->getChecksum($entry) . " < -- etag \n";
-            }
+        $devicePath = (string) $devicePath;
+        $skipFormat = (bool) $skipFormat;
+        $dryRun = (bool) $dryRun;
+        $awsBackupManager = $this->_getBackupManager();
+
+        $this->_getStreamOutput()->writeln('Preparing backup device');
+        $device = new S3Export_Device($devicePath);
+        if (!$skipFormat) {
+            $device->format();
         }
-    }
+        $device->mount();
 
-    public function initDisk($devicePath, $truecryptPassword) {
-        // initialize a disk to be ready to be sent to AWS
-    }
+        $this->_getStreamOutput()->writeln('Creating AWS backup job');
+        $manifestFile = new CM_File($manifestPath);
+        $job = $awsBackupManager->createJob($manifestFile->read(), $dryRun);
+        $this->_getStreamOutput()->writeln("Job created, id: `{$job->getId()}`");
+        $this->_getStreamOutput()->writeln('Storing AWS Signature on backup device');
+        $awsBackupManager->storeJobSignatureOnDevice($job, $device);
 
-    public function mountDisk($devicePath) {
-        var_dump($this->_mountDisk($devicePath));
+        $device->unmount();
     }
 
     /**
-     * @return CM_File_Filesystem
+     * @param string $jobId
+     */
+    public function cancelJob($jobId) {
+        $this->_getBackupManager()->cancelJob($jobId);
+        $this->_getStreamOutput()->writeln('Job successfully cancelled');
+    }
+
+    /**
+     * @return S3Export_BackupManager
      * @throws CM_Exception_Invalid
      */
-    private function _getFilesystemOriginal() {
-        return $this->getServiceManager()->get('s3export-filesystem-original', 'CM_File_Filesystem');
-    }
-
-    /**
-     * @return CM_File_Filesystem
-     * @throws CM_Exception_Invalid
-     */
-    private function _getFilesystemBackup() {
-        return $this->getServiceManager()->get('s3export-filesystem-backup', 'CM_File_Filesystem');
-    }
-
-    /**
-     * @return CM_File_Filesystem
-     * @throws CM_Exception_Invalid
-     */
-    private function _getFilesystemEncrypted() {
-        return $this->getServiceManager()->get('s3export-filesystem-encrypted', 'CM_File_Filesystem');
-    }
-
-    /**
-     *
-     * @return string
-     */
-    private function _getPathPrefix(CM_File_Filesystem $filesystem) {
-        return $filesystem->getAdapter()->getPathPrefix();
+    protected function _getBackupManager() {
+        return CM_Service_Manager::getInstance()->get('s3export-backup-manager');
     }
 
     public static function getPackageName() {
