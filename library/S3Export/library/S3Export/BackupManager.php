@@ -18,7 +18,7 @@ class S3Export_BackupManager {
      * @return S3Export_AwsBackupJob
      */
     public function createJob($manifest, $dryRun = null) {
-        $apiResponse = $this->_getClient()->createJob(array(
+        $apiResponse = $this->_client->createJob(array(
             'JobType'      => 'Export',
             'Manifest'     => (string) $manifest,
             'ValidateOnly' => (bool) $dryRun,
@@ -30,7 +30,7 @@ class S3Export_BackupManager {
      * @param string $id
      */
     public function cancelJob($id) {
-        $this->_getClient()->cancelJob(['JobId' => (string) $id]);
+        $this->_client->cancelJob(['JobId' => (string) $id]);
     }
 
     /**
@@ -38,14 +38,14 @@ class S3Export_BackupManager {
      * @return \Guzzle\Service\Resource\Model
      */
     public function getJobStatus($id) {
-        return $this->_getClient()->getStatus(['JobId' => (string) $id]);
+        return $this->_client->getStatus(['JobId' => (string) $id]);
     }
 
     /**
      * @return \Guzzle\Service\Resource\Model
      */
     public function listJobs() {
-        return $this->_getClient()->listJobs();
+        return $this->_client->listJobs();
     }
 
     /**
@@ -55,12 +55,5 @@ class S3Export_BackupManager {
     public function storeJobSignatureOnDevice(S3Export_AwsBackupJob $job, S3Export_Device $device) {
         $file = new CM_File('SIGNATURE', $device->getFilesystem());
         $file->write($job->getSignature());
-    }
-
-    /**
-     * @return \Aws\ImportExport\ImportExportClient
-     */
-    protected function _getClient() {
-        return $this->_client;
     }
 }
