@@ -3,7 +3,10 @@
 class S3Export_AwsBackupJob {
 
     /** @var string */
-    private $signature;
+    private $_signature;
+
+    /** @var string */
+    private $_id;
 
     /**
      * @param string $id
@@ -11,7 +14,7 @@ class S3Export_AwsBackupJob {
      */
     public function __construct($id, $signature) {
         $this->_id = (string) $id;
-        $this->signature = (string) $signature;
+        $this->_signature = (string) $signature;
     }
 
     /**
@@ -25,6 +28,6 @@ class S3Export_AwsBackupJob {
      * @return string
      */
     public function getSignature() {
-        return $this->signature;
+        return $this->_signature;
     }
 }
