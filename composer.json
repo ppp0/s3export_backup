@@ -1,5 +1,5 @@
 {
-  "name": "cargomedia/cm-project",
+  "name": "cargomedia/s3export_backup",
   "config": {
     "bin-dir": "bin/"
   },
