@@ -48,13 +48,12 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         if (!$skipFormat) {
             $device->format();
         }
-        $device->mount('/media/s3disk_crypted');
+        $device->mount();
 
         $this->_getStreamOutput()->writeln('Creating AWS backup job');
         $manifestFile = new CM_File($manifestPath);
         $job = $awsBackupManager->createJob($manifestFile->read(), $dryRun);
         $this->_getStreamOutput()->writeln("Job created, id: `{$job->getId()}`");
-
         $this->_getStreamOutput()->writeln('Storing AWS Signature on backup device');
         $awsBackupManager->storeJobSignatureOnDevice($job, $device);
 
