@@ -28,11 +28,16 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     }
 
     /**
+     * @param           $manifestPath
      * @param string    $devicePath
      * @param bool|null $skipFormat
      * @param bool|null $dryRun
      */
-    public function createJob($devicePath, $skipFormat = null, $dryRun = null) {
+    public function createJob($manifestPath, $devicePath, $skipFormat = null, $dryRun = null) {
+        $manifestPath = (string) $manifestPath;
+        if (!preg_match('/^\//', $manifestPath)) {
+            $manifestPath = getcwd() . '/' . $manifestPath;
+        }
         $devicePath = (string) $devicePath;
         $skipFormat = (bool) $skipFormat;
         $dryRun = (bool) $dryRun;
@@ -45,11 +50,10 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         }
         $device->mount('/media/s3disk_crypted');
 
-        $manifest = new S3Export_AwsBackupManifest();
-        $manifest->setDeviceData($this->_gatherDeviceData());
         $this->_getStreamOutput()->writeln('Creating AWS backup job');
-        $job = $awsBackupManager->createJob($manifest, $dryRun);
-        $this->_getStreamOutput()->writeln("Job created. ID: `{$job->getId()}`");
+        $manifestFile = new CM_File($manifestPath);
+        $job = $awsBackupManager->createJob($manifestFile->read(), $dryRun);
+        $this->_getStreamOutput()->writeln("Job created, id: `{$job->getId()}`");
 
         $this->_getStreamOutput()->writeln('Storing AWS Signature on backup device');
         $awsBackupManager->storeJobSignatureOnDevice($job, $device);

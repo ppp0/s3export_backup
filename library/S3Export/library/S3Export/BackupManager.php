@@ -13,18 +13,17 @@ class S3Export_BackupManager {
     }
 
     /**
-     * @param S3Export_AwsBackupManifest $manifest
-     * @param bool|null                  $dryRun
+     * @param string    $manifest
+     * @param bool|null $dryRun
      * @return S3Export_AwsBackupJob
      */
-    public function createJob(S3Export_AwsBackupManifest $manifest, $dryRun = null) {
+    public function createJob($manifest, $dryRun = null) {
         $apiResponse = $this->client->createJob(array(
             'JobType'      => 'Export',
-            'Manifest'     => $manifest->getContent(),
+            'Manifest'     => (string) $manifest,
             'ValidateOnly' => (bool) $dryRun,
         ));
-        $signature = new S3Export_AwsBackupJob($apiResponse->get('JobId'), $apiResponse->get('SignatureFileContents'));
-        return $signature;
+        return new S3Export_AwsBackupJob($apiResponse->get('JobId'), $apiResponse->get('SignatureFileContents'));
     }
 
     /**
