@@ -70,23 +70,6 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     }
 
     /**
-     * @return array
-     */
-    protected function _gatherDeviceData() {
-        $deviceId = $this->_getStreamInput()->read('Provide device ID');
-        $cacheKey = 'DeviceData' . $deviceId;
-        $cache = new CM_Cache_Storage_File();
-        if (false === ($deviceData = $cache->get($cacheKey))) {
-            $this->_getStreamOutput()->writeln('Device not found. Please provide required manifest data.');
-            $deviceData = [
-                'countryOfOrigin' => $this->_getStreamInput()->read('Country of origin?'),
-            ];
-            $cache->set($cacheKey, $deviceData);
-        }
-        return $deviceData;
-    }
-
-    /**
      * @return S3Export_BackupManager
      * @throws CM_Exception_Invalid
      */
