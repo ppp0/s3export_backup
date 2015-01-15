@@ -18,7 +18,7 @@ class S3Export_BackupManager {
      * @return S3Export_AwsBackupJob
      */
     public function createJob($manifest, $dryRun = null) {
-        $apiResponse = $this->_client->createJob(array(
+        $apiResponse = $this->_getClient()->createJob(array(
             'JobType'      => 'Export',
             'Manifest'     => (string) $manifest,
             'ValidateOnly' => (bool) $dryRun,
