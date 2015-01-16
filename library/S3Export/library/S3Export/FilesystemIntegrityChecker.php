@@ -11,11 +11,8 @@ class S3Export_FilesystemIntegrityChecker {
     /** @var CM_File_Filesystem */
     private $_sourceFilesystem;
 
-    /** @var int */
-    private $_assertionSuccessCount;
-
-    /** @var int */
-    private $_assertionFailCount;
+    /** @var S3Export_Asserter */
+    private $_asserter;
 
     /**
      * @param CM_OutputStream_Interface $output
@@ -26,39 +23,7 @@ class S3Export_FilesystemIntegrityChecker {
         $this->_output = $output;
         $this->_sourceFilesystem = $sourceFilesystem;
         $this->_backupFilesystem = $backupFilesystem;
-        $this->_assertionSuccessCount = 0;
-        $this->_assertionFailCount = 0;
-    }
-
-    /**
-     * @param mixed $assertion
-     */
-    public function assertThat($assertion) {
-        if ($assertion) {
-            $this->_assertionSuccessCount++;
-        } else {
-            $this->_assertionFailCount++;
-        }
-    }
-    /**
-     * @return int
-     */
-    public function getAssertionSuccessCount() {
-        return $this->_assertionSuccessCount;
-    }
-
-    /**
-     * @return int
-     */
-    public function getAssertionFailCount() {
-        return $this->_assertionFailCount;
-    }
-
-    /**
-     * @return int
-     */
-    public function getAssertionCount() {
-        return $this->getAssertionSuccessCount() + $this->getAssertionFailCount();
+        $this->_asserter = new S3Export_Asserter();
     }
 
     public function checkIntegrity() {
@@ -69,8 +34,17 @@ class S3Export_FilesystemIntegrityChecker {
             }
             $sourceFile = new CM_File($path, $this->_sourceFilesystem);
             $backupFile = new CM_File($path, $this->_backupFilesystem);
-            $this->assertThat($sourceFile->getHash() === $backupFile->getHash());
+            $this->_asserter->assertThat($backupFile->exists(), null, function () use ($sourceFile) {
+                $this->_output->writeln("Corresponding backup file does not exist for {$sourceFile->getPath()}");
+            });
+            $this->_asserter->assertThat($sourceFile->getHash() === $backupFile->getHash(), null, function () use ($sourceFile) {
+                $this->_output->writeln("Different hashes for {$sourceFile->getPath()}");
+            });
         }
+        $this->_output->writeln(join(', ', [
+            "Assertions run: {$this->_asserter->getAssertionCount()}",
+            "successes: {$this->_asserter->getAssertionSuccessCount()}",
+            "failures: {$this->_asserter->getAssertionFailCount()}"
+        ]));
     }
-
 }
