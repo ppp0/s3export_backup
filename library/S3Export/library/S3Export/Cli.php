@@ -43,6 +43,9 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
 
         $filesystemsIntegrityChecker = new S3Export_FilesystemIntegrityChecker($this->_getStreamOutput(), $this->_getFilesystemOriginal(), $truecryptImage->getFilesystem());
         $filesystemsIntegrityChecker->checkIntegrity();
+
+        $truecryptImage->unmount();
+        $device->unmount();
     }
 
     /**

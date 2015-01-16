@@ -64,7 +64,7 @@ class S3Export_FilesystemIntegrityChecker {
     public function checkIntegrity() {
         $filePaths = $this->_sourceFilesystem->listByPrefix('*')['files'];
         foreach ($filePaths as $key => $path) {
-            if ($key % 20 !== 0) {
+            if ($key % 20 === 0) {
                 continue;
             }
             $sourceFile = new CM_File($path, $this->_sourceFilesystem);
