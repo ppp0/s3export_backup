@@ -23,23 +23,25 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     /**
      * @param string $devicePath
      * @param string $truecryptPassword
+     * @throws CM_Cli_Exception_Internal
      */
-    public function verifyDisk($devicePath, $truecryptPassword) {
-        try {
-            $filesystemBackupEncrypted = $this->_mountFilesystemEncrypted($devicePath);
-            $truecryptImageFile = $this->_findTruecryptImageFile($filesystemBackupEncrypted);
-            $filesystemBackup = $this->_decryptDisk($truecryptImageFile, $truecryptPassword);
-            $filesystemOriginal = $this->_getFilesystemOriginal();
-        } catch (Exception $e) {
-            print($e->getMessage());
+    public function verifyBackup($devicePath, $truecryptPassword) {
+        $device = new S3Export_Device($devicePath);
+        if ($device->getPartitionCount() === 1) {
+            $device->fixPartitioning();
         }
-        $result = $this->_compareFilesystems($filesystemOriginal, $filesystemBackup, 10);
-        print "\nCheck completed\n";
-        print "Files checked: " . $result['files'] . "\n";
-        foreach ($result['errors'] as $errorType => $occurences) {
-            print $errorType . ": " . $occurences . "\n";
+        $device->mount();
+        $truecryptImageFile = \Functional\first($device->getMountpoint()->listFiles(), function(CM_File $file) {
+            return $file->getExtension() === 'tc';
+        });
+        if (null === $truecryptImageFile) {
+            throw new CM_Cli_Exception_Internal("Cannot find truecrypt image on {$device->getPath()}");
         }
-        print ".\n";
+
+        $truecryptImage = new S3Export_TruecryptImage($truecryptImageFile, $truecryptPassword);
+        $truecryptImage->mount();
+
+        $this->_compareFilesystems($this->_getFilesystemOriginal(), $truecryptImage->getFilesystem());
     }
 
     /**
@@ -90,65 +92,13 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     protected function _getBackupManager() {
         return CM_Service_Manager::getInstance()->get('s3export-backup-manager');
     }
+
     /**
-     *
-     * @param string $devicePath
      * @return CM_File_Filesystem
+     * @throws CM_Exception_Invalid
      */
-    private function _mountFilesystemEncrypted($devicePath) {
-        $filesystemEncrypted = $this->_getFilesystemBackupEncrypted();
-        $mountPoint = rtrim($this->_getLocalFilesystemPath($filesystemEncrypted), '/');
-        $deviceWithoutPartition = preg_replace('/\d+$/', '', $devicePath);
-        $partitionsOnDevice = explode("\n", CM_Util::exec('lsblk', ['-nr', $deviceWithoutPartition]));
-        array_pop($partitionsOnDevice);
-        if (count($partitionsOnDevice) == 1) {
-            $this->_getStreamOutput()->writeln('Fixing the partition table...');
-            CM_Util::exec('sgdisk', ['--move-second-header', $deviceWithoutPartition]);
-        }
-        $mounted = CM_Util::exec('cat', ['/proc/mounts']);
-        if (0 == preg_match('/' . preg_quote($devicePath, '/') . '.+' . preg_quote($mountPoint, '/') . '/', $mounted)) {
-            CM_Util::exec('mount', [$devicePath, $mountPoint]);
-        }
-        return $filesystemEncrypted;
-    }
-    /**
-     * @param CM_File_Filesystem $filesystem
-     * @return CM_File
-     * @throws CM_Exception
-     */
-    private function _findTruecryptImageFile(CM_File_Filesystem $filesystem) {
-        $pathList = $filesystem->listByPrefix('/', true)['files'];
-        $imagePath = Functional\first($pathList, function ($path) {
-            return preg_match('/\.tc$/', $path);
-        });
-        if (null === $imagePath) {
-            throw new CM_Exception('Cannot find .tc file on');
-        }
-        return new CM_File($imagePath, $filesystem);
-    }
-    /**
-     * @param CM_File $truecryptImageFile
-     * @param $truecryptPassword
-     * @return CM_File_Filesystem
-     */
-    private function _decryptDisk(CM_File $truecryptImageFile, $truecryptPassword) {
-        $filesystemDecrypted = $this->_getFilesystemBackupDecrypted();
-        try {
-            CM_Util::exec('truecrypt', [
-                '-p', $truecryptPassword,
-                '--protect-hidden=no',
-                '--keyfiles=',
-                $truecryptImageFile->getPathOnLocalFilesystem(),
-                $this->_getLocalFilesystemPath($filesystemDecrypted),
-            ]);
-        } catch (CM_Exception $e) {
-            if (preg_match('/The volume.+is already mounted/', $e->getMessage()) > 0) {
-                return $filesystemDecrypted;
-            } else {
-                throw $e;
-            }
-        }
-        return $filesystemDecrypted;
+    protected function _getFilesystemOriginal() {
+        return CM_Service_Manager::getInstance()->get('s3export-filesystem-original');
     }
 
     public static function getPackageName() {
