@@ -69,7 +69,7 @@ class S3Export_FilesystemIntegrityChecker {
             }
             $sourceFile = new CM_File($path, $this->_sourceFilesystem);
             $backupFile = new CM_File($path, $this->_backupFilesystem);
-            $this->assertThat(md5($sourceFile->read() === md5($backupFile->read())));
+            $this->assertThat($sourceFile->getHash() === $backupFile->getHash());
         }
     }
 
