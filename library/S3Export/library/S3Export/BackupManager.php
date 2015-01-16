@@ -1,8 +1,6 @@
 <?php
 
-class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
-
-    use CM_Service_ManagerAwareTrait;
+class S3Export_BackupManager {
 
     /** @var \Aws\ImportExport\ImportExportClient */
     private $_client;
