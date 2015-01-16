@@ -1,15 +1,17 @@
 <?php
 
-class S3Export_BackupManager {
+class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
+
+    use CM_Service_ManagerAwareTrait;
 
     /** @var \Aws\ImportExport\ImportExportClient */
     private $_client;
 
     /**
-     * @param array $credentials
+     * @param array $clientConfig
      */
-    public function __construct(array $credentials) {
-        $this->_client = Aws\ImportExport\ImportExportClient::factory($credentials);
+    public function __construct(array $clientConfig) {
+        $this->_client = \Aws\ImportExport\ImportExportClient::factory($clientConfig);
     }
 
     /**

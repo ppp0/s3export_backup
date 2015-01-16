@@ -31,7 +31,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
             $device->fixPartitioning();
         }
         $device->mount();
-        $truecryptImageFile = \Functional\first($device->getMountpoint()->listFiles(), function(CM_File $file) {
+        $truecryptImageFile = \Functional\first($device->getMountpoint()->listFiles(), function (CM_File $file) {
             return $file->getExtension() === 'tc';
         });
         if (null === $truecryptImageFile) {
@@ -41,7 +41,8 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         $truecryptImage = new S3Export_TruecryptImage($truecryptImageFile, $truecryptPassword);
         $truecryptImage->mount();
 
-        $this->_compareFilesystems($this->_getFilesystemOriginal(), $truecryptImage->getFilesystem());
+        $filesystemsIntegrityChecker = new S3Export_FilesystemIntegrityChecker($this->_getStreamOutput(), $this->_getFilesystemOriginal(), $truecryptImage->getFilesystem());
+        $filesystemsIntegrityChecker->checkIntegrity();
     }
 
     /**
