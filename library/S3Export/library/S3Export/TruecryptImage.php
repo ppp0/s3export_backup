@@ -28,7 +28,7 @@ class S3Export_TruecryptImage {
         $this->_mountpointPath = (string) $tmpDir->getPathOnLocalFilesystem();
 
         CM_Util::exec('truecrypt', [
-            '-p', $this->_truecryptPassword,
+            "--password={$this->_truecryptPassword}",
             '--protect-hidden=no',
             '--keyfiles=',
             $this->_image->getPathOnLocalFilesystem(),
@@ -37,7 +37,9 @@ class S3Export_TruecryptImage {
     }
 
     public function unmount() {
-        CM_Util::exec('truecrypt', ['--dismount', $this->_mountpointPath]);
+        CM_Util::exec('truecrypt', [
+            "--dismount={$this->_image->getPathOnLocalFilesystem()}"
+        ]);
     }
 
     /**
