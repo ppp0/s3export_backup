@@ -41,8 +41,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         $truecryptImage = new S3Export_TruecryptImage($truecryptImageFile, $truecryptPassword);
         $truecryptImage->mount();
 
-        $filesystemsIntegrityChecker = new S3Export_FilesystemIntegrityChecker($this->_getStreamOutput(), $this->_getFilesystemOriginal(), $truecryptImage->getFilesystem());
-        $filesystemsIntegrityChecker->checkIntegrity();
+        $this->_getBackupManager()->verifyExport($this->_getStreamOutput(), $truecryptImage->getFilesystem());
 
         $truecryptImage->unmount();
         $device->unmount();
@@ -95,14 +94,6 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      */
     protected function _getBackupManager() {
         return CM_Service_Manager::getInstance()->get('s3export-backup-manager');
-    }
-
-    /**
-     * @return CM_File_Filesystem
-     * @throws CM_Exception_Invalid
-     */
-    protected function _getFilesystemOriginal() {
-        return CM_Service_Manager::getInstance()->get('s3export-filesystem-original');
     }
 
     public static function getPackageName() {
