@@ -32,6 +32,5 @@ Vagrant.configure('2') do |config|
     'cd /home/vagrant/s3export_backup',
     'composer --no-interaction install --dev',
     'bin/cm app setup',
-    'bin/cm db run-updates',
   ].join(' && ')
 end
