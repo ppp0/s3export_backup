@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "ca76e6ac533a73fb2cc76c0b3b0d2859",
+    "hash": "d0119043995299f0c0496edffa387938",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -995,18 +995,18 @@
         },
         {
             "name": "symfony/console",
-            "version": "v2.6.1",
+            "version": "v2.6.3",
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "ef825fd9f809d275926547c9e57cbf14968793e8"
+                "reference": "6ac6491ff60c0e5a941db3ccdc75a07adbb61476"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/symfony-console-ef825fd9f809d275926547c9e57cbf14968793e8-zip-120e33.zip",
-                "reference": "ef825fd9f809d275926547c9e57cbf14968793e8",
-                "shasum": "87854e930774341bf202c4fc6faef36b25dbbaa6"
+                "url": "http://satis.cargomedia.ch/dist/dist/symfony-console-6ac6491ff60c0e5a941db3ccdc75a07adbb61476-zip-41c862.zip",
+                "reference": "6ac6491ff60c0e5a941db3ccdc75a07adbb61476",
+                "shasum": "6ce5a5b7b9a39bf91e3a9cdaa34878f7bf190e3b"
             },
             "require": {
                 "php": ">=5.3.3"
@@ -1048,32 +1048,32 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2014-12-02 20:19:20"
+            "time": "2015-01-06 17:50:02"
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.6.1",
+            "version": "v2.6.3",
             "target-dir": "Symfony/Component/EventDispatcher",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/EventDispatcher.git",
-                "reference": "720fe9bca893df7ad1b4546649473b5afddf0216"
+                "reference": "40ff70cadea3785d83cac1c8309514b36113064e"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/symfony-event-dispatcher-720fe9bca893df7ad1b4546649473b5afddf0216-zip-0ac9ba.zip",
-                "reference": "720fe9bca893df7ad1b4546649473b5afddf0216",
-                "shasum": "f88508264c9f28bad73c65330e5ecbb80fc92254"
+                "url": "http://satis.cargomedia.ch/dist/dist/symfony-event-dispatcher-40ff70cadea3785d83cac1c8309514b36113064e-zip-2cc0cd.zip",
+                "reference": "40ff70cadea3785d83cac1c8309514b36113064e",
+                "shasum": "19d5f6a29f983d930394968bc28ee936d3017604"
             },
             "require": {
                 "php": ">=5.3.3"
             },
             "require-dev": {
                 "psr/log": "~1.0",
-                "symfony/config": "~2.0",
+                "symfony/config": "~2.0,>=2.0.5",
                 "symfony/dependency-injection": "~2.6",
                 "symfony/expression-language": "~2.6",
-                "symfony/stopwatch": "~2.2"
+                "symfony/stopwatch": "~2.3"
             },
             "suggest": {
                 "symfony/dependency-injection": "",
@@ -1106,22 +1106,22 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "http://symfony.com",
-            "time": "2014-12-02 20:19:20"
+            "time": "2015-01-05 14:28:40"
         },
         {
             "name": "symfony/finder",
-            "version": "v2.6.1",
+            "version": "v2.6.3",
             "target-dir": "Symfony/Component/Finder",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder.git",
-                "reference": "0d3ef7f6ec55a7af5eca7914eaa0dacc04ccc721"
+                "reference": "16513333bca64186c01609961a2bb1b95b5e1355"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/symfony-finder-0d3ef7f6ec55a7af5eca7914eaa0dacc04ccc721-zip-715868.zip",
-                "reference": "0d3ef7f6ec55a7af5eca7914eaa0dacc04ccc721",
-                "shasum": "c4fd477b44a3f03b50f739f626ad0f20b135d638"
+                "url": "http://satis.cargomedia.ch/dist/dist/symfony-finder-16513333bca64186c01609961a2bb1b95b5e1355-zip-80b224.zip",
+                "reference": "16513333bca64186c01609961a2bb1b95b5e1355",
+                "shasum": "41336a97b46e40c9ca32cf075bccba4be5e753ec"
             },
             "require": {
                 "php": ">=5.3.3"
@@ -1153,22 +1153,22 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "http://symfony.com",
-            "time": "2014-12-02 20:19:20"
+            "time": "2015-01-03 08:01:59"
         },
         {
             "name": "symfony/process",
-            "version": "v2.6.1",
+            "version": "v2.6.3",
             "target-dir": "Symfony/Component/Process",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process.git",
-                "reference": "bf0c9bd625f13b0b0bbe39919225cf145dfb935a"
+                "reference": "319794f611bd8bdefbac72beb3f05e847f8ebc92"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/symfony-process-bf0c9bd625f13b0b0bbe39919225cf145dfb935a-zip-54cbdb.zip",
-                "reference": "bf0c9bd625f13b0b0bbe39919225cf145dfb935a",
-                "shasum": "110710cb13f6efaf54c8815d219598a9b35cc615"
+                "url": "http://satis.cargomedia.ch/dist/dist/symfony-process-319794f611bd8bdefbac72beb3f05e847f8ebc92-zip-44bf59.zip",
+                "reference": "319794f611bd8bdefbac72beb3f05e847f8ebc92",
+                "shasum": "e93a0d8a81b643c20009c4a3ed7dffd29d9c7fec"
             },
             "require": {
                 "php": ">=5.3.3"
@@ -1200,7 +1200,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "http://symfony.com",
-            "time": "2014-12-02 20:19:20"
+            "time": "2015-01-06 22:47:52"
         },
         {
             "name": "tomaszdurka/codegenerator",
@@ -1437,17 +1437,17 @@
         },
         {
             "name": "phpunit/php-token-stream",
-            "version": "1.3.0",
+            "version": "1.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-token-stream.git",
-                "reference": "f8d5d08c56de5cfd592b3340424a81733259a876"
+                "reference": "db32c18eba00b121c145575fcbcd4d4d24e6db74"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/phpunit-php-token-stream-f8d5d08c56de5cfd592b3340424a81733259a876-zip-dd5952.zip",
-                "reference": "f8d5d08c56de5cfd592b3340424a81733259a876",
-                "shasum": "606a19e84d23290dc8add1d1a8c0b325a4cc2698"
+                "url": "http://satis.cargomedia.ch/dist/dist/phpunit-php-token-stream-db32c18eba00b121c145575fcbcd4d4d24e6db74-zip-869dbc.zip",
+                "reference": "db32c18eba00b121c145575fcbcd4d4d24e6db74",
+                "shasum": "7fe1bcc63321c111df94eea735695dd91c9f1f14"
             },
             "require": {
                 "ext-tokenizer": "*",
@@ -1459,7 +1459,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.3-dev"
+                    "dev-master": "1.4-dev"
                 }
             },
             "autoload": {
@@ -1482,7 +1482,7 @@
             "keywords": [
                 "tokenizer"
             ],
-            "time": "2014-08-31 06:12:13"
+            "time": "2015-01-17 09:51:32"
         },
         {
             "name": "phpunit/phpunit",
@@ -1883,18 +1883,18 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.6.1",
+            "version": "v2.6.3",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "3346fc090a3eb6b53d408db2903b241af51dcb20"
+                "reference": "82462a90848a52c2533aa6b598b107d68076b018"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/symfony-yaml-3346fc090a3eb6b53d408db2903b241af51dcb20-zip-2941db.zip",
-                "reference": "3346fc090a3eb6b53d408db2903b241af51dcb20",
-                "shasum": "a004b11974ddff36513bc2a3de3df2bcad7aee2e"
+                "url": "http://satis.cargomedia.ch/dist/dist/symfony-yaml-82462a90848a52c2533aa6b598b107d68076b018-zip-32919c.zip",
+                "reference": "82462a90848a52c2533aa6b598b107d68076b018",
+                "shasum": "02167a177e4e3e825cc1a43fa4e182b864c446ef"
             },
             "require": {
                 "php": ">=5.3.3"
@@ -1926,7 +1926,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2014-12-02 20:19:20"
+            "time": "2015-01-03 15:33:07"
         },
         {
             "name": "tomaszdurka/mocka",
