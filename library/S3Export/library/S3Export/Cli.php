@@ -27,7 +27,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      */
     public function verifyBackup($devicePath, $truecryptPassword) {
         $device = new S3Export_Device($devicePath);
-        if ($device->getPartitionCount() === 1) {
+        if (!$device->hasPartitions()) {
             $device->fixPartitioning();
         }
         $device->mount();
@@ -35,7 +35,7 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
             return $file->getExtension() === 'tc';
         });
         if (null === $truecryptImageFile) {
-            throw new CM_Cli_Exception_Internal("Cannot find truecrypt image on {$device->getPath()}");
+            throw new CM_Cli_Exception_Internal("Cannot find truecrypt image on `{$device->getPath()}`");
         }
 
         $truecryptImage = new S3Export_TruecryptImage($truecryptImageFile, $truecryptPassword);

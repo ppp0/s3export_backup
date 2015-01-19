@@ -75,11 +75,14 @@ class S3Export_Device {
     }
 
     /**
-     * @return int
+     * @return bool
      * @throws CM_Exception
      */
-    public function getPartitionCount() {
-        return count(explode("\n", CM_Util::exec('lsblk', ['-nr', $this->_getPathWithoutPartition()]))) - 1;
+    public function hasPartitions() {
+        $blocks = explode("\n", CM_Util::exec('lsblk', ['-n', '-o', 'TYPE', $this->_getPathWithoutPartition()]));
+        return \Functional\some($blocks, function($block) {
+            return $block === 'part';
+        });
     }
 
     public function fixPartitioning() {
