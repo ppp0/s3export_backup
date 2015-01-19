@@ -1,6 +1,7 @@
 node default {
 
   require 'truecrypt'
+  require 'gdisk'
 
   class { 'cm::application':
     development => true,
