@@ -23,8 +23,29 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     /**
      * @param string $devicePath
      * @param string $truecryptPassword
+     * @throws CM_Cli_Exception_Internal
      */
-    public function verifyDisk($devicePath, $truecryptPassword) {
+    public function verifyBackup($devicePath, $truecryptPassword) {
+        $device = new S3Export_Device($devicePath);
+        if ($device->getPartitionCount() === 1) {
+            $device->fixPartitioning();
+        }
+        $device->mount();
+        $truecryptImageFile = \Functional\first($device->getMountpoint()->listFiles(), function (CM_File $file) {
+            return $file->getExtension() === 'tc';
+        });
+        if (null === $truecryptImageFile) {
+            throw new CM_Cli_Exception_Internal("Cannot find truecrypt image on {$device->getPath()}");
+        }
+
+        $truecryptImage = new S3Export_TruecryptImage($truecryptImageFile, $truecryptPassword);
+        $truecryptImage->mount();
+
+        $filesystemsIntegrityChecker = new S3Export_FilesystemIntegrityChecker($this->_getStreamOutput(), $this->_getFilesystemOriginal(), $truecryptImage->getFilesystem());
+        $filesystemsIntegrityChecker->checkIntegrity();
+
+        $truecryptImage->unmount();
+        $device->unmount();
     }
 
     /**
@@ -74,6 +95,14 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      */
     protected function _getBackupManager() {
         return CM_Service_Manager::getInstance()->get('s3export-backup-manager');
+    }
+
+    /**
+     * @return CM_File_Filesystem
+     * @throws CM_Exception_Invalid
+     */
+    protected function _getFilesystemOriginal() {
+        return CM_Service_Manager::getInstance()->get('s3export-filesystem-original');
     }
 
     public static function getPackageName() {

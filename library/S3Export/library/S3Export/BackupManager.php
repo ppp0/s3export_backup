@@ -6,10 +6,10 @@ class S3Export_BackupManager {
     private $_client;
 
     /**
-     * @param array $credentials
+     * @param array $clientConfig
      */
-    public function __construct(array $credentials) {
-        $this->_client = Aws\ImportExport\ImportExportClient::factory($credentials);
+    public function __construct(array $clientConfig) {
+        $this->_client = \Aws\ImportExport\ImportExportClient::factory($clientConfig);
     }
 
     /**
