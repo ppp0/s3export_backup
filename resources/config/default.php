@@ -1,7 +1,11 @@
 <?php
 
 return function (CM_Config_Node $config) {
+
     $config->debug = true;
+
+    $config->CM_App->setupScriptClasses = array();
+    $config->CM_App->setupScriptClasses[] = 'CM_File_Filesystem_SetupScript';
 
     $config->services['s3export-filesystem-original'] = array(
         'class'  => 'CM_File_Filesystem_Factory',
