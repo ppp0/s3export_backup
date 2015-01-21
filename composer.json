@@ -22,13 +22,13 @@
   ],
   "autoload": {
     "psr-0": {
-      "S3Export_": "library/S3Export/library/"
+      "S3Export_": "library/"
     }
   },
   "extra": {
     "cm-modules": {
       "S3Export": {
-        "path": "library/S3Export/"
+        "path": ""
       }
     }
   }
