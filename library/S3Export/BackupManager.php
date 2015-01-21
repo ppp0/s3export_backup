@@ -68,8 +68,9 @@ class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
 
         $sourceFilesystem = $this->_getFilesystemOriginal();
         // TODO: Performance/memory bottle-neck
-        $filePaths = $sourceFilesystem->listByPrefix('*')['files'];
-        for ($i = 0; $i < 1000; $i++) {
+        $filePaths = $backupFilesystem->listByPrefix('/')['files'];
+        $numberOfIterations = min(1000, ceil(0.1 * count($filePaths)));
+        for ($i = 0; $i < $numberOfIterations; $i++) {
             $index = array_rand($filePaths);
             $path = $filePaths[$index];
 
