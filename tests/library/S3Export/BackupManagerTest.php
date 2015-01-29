@@ -22,6 +22,15 @@ class S3export_BackupManagerTest extends PHPUnit_Framework_TestCase {
         $this->assertContains('Assertions run: 20, succeeded: 20, failed: 0', $outputString);
     }
 
+    public function testListFiles() {
+        $filesystemLocal = $this->_mockFilesystem();
+        $backupManager = $this->mockClass('S3Export_BackupManager')->newInstanceWithoutConstructor();
+        /** @var S3Export_BackupManager $backupManager */
+        $this->assertCount(50, $backupManager->listFiles($filesystemLocal, 50));
+        $this->assertCount(100, $backupManager->listFiles($filesystemLocal, 100));
+        $this->assertCount(100, $backupManager->listFiles($filesystemLocal, 150));
+    }
+
     /**
      * @return CM_File_Filesystem
      * @throws CM_Exception_Invalid

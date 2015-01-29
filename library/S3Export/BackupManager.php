@@ -68,7 +68,7 @@ class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
 
         $sourceFilesystem = $this->_getFilesystemOriginal();
         // TODO: Performance/memory bottle-neck
-        $filePaths = $backupFilesystem->listByPrefix('/')['files'];
+        $filePaths = $backupFilesystem->listByPrefix('**/*')['files'];
         $numberOfIterations = min(1000, ceil(0.1 * count($filePaths)));
         for ($i = 0; $i < $numberOfIterations; $i++) {
             $index = array_rand($filePaths);
@@ -88,7 +88,23 @@ class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
             "succeeded: {$asserter->getAssertionSuccessCount()}",
             "failed: {$asserter->getAssertionFailCount()}"
         ]));
+    }
 
+    /**
+     * @param CM_File_Filesystem $filesystem
+     * @param int                $limit
+     * @return string[]
+     */
+    public function listFiles(CM_File_Filesystem $filesystem, $limit) {
+        $files = [];
+        $directories = ['/'];
+        do {
+            $path = array_shift($directories);
+            $entries = $filesystem->listByPrefix($path, true);
+            $files = array_merge($files, $entries['files']);
+            $directories = array_merge($directories, $entries['dirs']);
+        } while (count($files) < $limit && count($directories) > 0);
+        return array_slice($files, 0, $limit);
     }
 
     /**
