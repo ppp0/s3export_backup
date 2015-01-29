@@ -23,12 +23,23 @@ class S3export_BackupManagerTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testListFiles() {
-        $filesystemLocal = $this->_mockFilesystem();
+        $adapter = $this->_mockFilesystem()->getAdapter();
+        $filesystem = $this->mockClass('CM_File_Filesystem')->newInstance([$adapter]);
+        $listByPrefixMethod = $filesystem->mockMethod('listByPrefix')->set(function($path, $noRecursion) use ($filesystem) {
+            return $filesystem->callOriginalMethod('listByPrefix', [$path, $noRecursion]);
+        });
+        /** @var CM_File_Filesystem $filesystem */
+
         $backupManager = $this->mockClass('S3Export_BackupManager')->newInstanceWithoutConstructor();
         /** @var S3Export_BackupManager $backupManager */
-        $this->assertCount(50, $backupManager->listFiles($filesystemLocal, 50));
-        $this->assertCount(100, $backupManager->listFiles($filesystemLocal, 100));
-        $this->assertCount(100, $backupManager->listFiles($filesystemLocal, 150));
+
+        $this->assertSame(0, $listByPrefixMethod->getCallCount());
+        $this->assertCount(45, $backupManager->listFiles($filesystem, 45));
+        // It needs to list root folder and then list 5 additional folders (10 files each) to get 45 files
+        $this->assertSame(6, $listByPrefixMethod->getCallCount());
+
+        $this->assertCount(200, $backupManager->listFiles($filesystem, 201));
+        $this->assertSame(6 + 21, $listByPrefixMethod->getCallCount());
     }
 
     /**
@@ -42,10 +53,15 @@ class S3export_BackupManagerTest extends PHPUnit_Framework_TestCase {
 
         $faker = Faker\Factory::create();
 
-        for ($i = 0; $i < 100; $i++) {
-            $path = $faker->lexify('????????' . $i);
-            $content = $faker->paragraph(10);
-            CM_File::create($path, $content, $filesystem);
+        for ($i = 0; $i < 20; $i++) {
+            $directory = $faker->lexify('????????' . $i);
+            for ($j = 0; $j < 10; $j++) {
+                $path = $faker->lexify('????????' . $j);
+                $content = $faker->paragraph(10);
+                $file = new CM_File($directory . '/' . $path, $filesystem);
+                $file->ensureParentDirectory();
+                $file->write($content);
+            }
         }
         return $filesystem;
     }
