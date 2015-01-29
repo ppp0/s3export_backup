@@ -74,14 +74,16 @@ class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
             $index = array_rand($filePaths);
             $path = $filePaths[$index];
 
-            $sourceFile = new CM_File($path, $sourceFilesystem);
             $backupFile = new CM_File($path, $backupFilesystem);
-            $asserter->assertThat($backupFile->exists(), null, function () use ($output, $sourceFile) {
-                $output->writeln("Integrity mismatch: Corresponding backup file does not exist for {$sourceFile->getPath()}");
+            $sourceFile = new CM_File($path, $sourceFilesystem);
+            $asserter->assertThat($sourceFile->exists(), null, function () use ($output, $backupFile) {
+                $output->writeln("Integrity mismatch: Corresponding backup file does not exist for {$backupFile->getPath()}");
             });
-            $asserter->assertThat($sourceFile->getHash() === $backupFile->getHash(), null, function () use ($output, $sourceFile) {
-                $output->writeln("Integrity mismatch: Different hashes for {$sourceFile->getPath()}");
-            });
+            if ($sourceFile->exists()) {
+                $asserter->assertThat($sourceFile->getHash() === $backupFile->getHash(), null, function () use ($output, $backupFile) {
+                    $output->writeln("Integrity mismatch: Different hashes for {$backupFile->getPath()}");
+                });
+            }
         }
         $output->writeln(join(', ', [
             "Assertions run: {$asserter->getAssertionCount()}",
