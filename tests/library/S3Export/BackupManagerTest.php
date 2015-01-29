@@ -19,7 +19,7 @@ class S3export_BackupManagerTest extends PHPUnit_Framework_TestCase {
         /** @var S3Export_BackupManager $backupManager */
 
         $backupManager->verifyExport($output, $filesystemSource);
-        $this->assertContains('Assertions run: 20, succeeded: 20, failed: 0', $outputString);
+        $this->assertContains('Assertions run: 40, succeeded: 40, failed: 0', $outputString);
     }
 
     public function testListFiles() {
