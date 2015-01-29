@@ -25,7 +25,7 @@ class S3export_BackupManagerTest extends PHPUnit_Framework_TestCase {
     public function testListFiles() {
         $adapter = $this->_mockFilesystem()->getAdapter();
         $filesystem = $this->mockClass('CM_File_Filesystem')->newInstance([$adapter]);
-        $listByPrefixMethod = $filesystem->mockMethod('listByPrefix')->set(function($path, $noRecursion) use ($filesystem) {
+        $listByPrefixMethod = $filesystem->mockMethod('listByPrefix')->set(function ($path, $noRecursion) use ($filesystem) {
             return $filesystem->callOriginalMethod('listByPrefix', [$path, $noRecursion]);
         });
         /** @var CM_File_Filesystem $filesystem */
@@ -35,7 +35,7 @@ class S3export_BackupManagerTest extends PHPUnit_Framework_TestCase {
 
         $this->assertSame(0, $listByPrefixMethod->getCallCount());
         $this->assertCount(45, $backupManager->listFiles($filesystem, 45));
-        // It needs to list root folder and then list 5 additional folders (10 files each) to get 45 files
+        // 6 times, because it needs to list root folder and then list 5 additional folders (10 files each) to get 45 files
         $this->assertSame(6, $listByPrefixMethod->getCallCount());
 
         $this->assertCount(200, $backupManager->listFiles($filesystem, 201));
