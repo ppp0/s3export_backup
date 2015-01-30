@@ -4,14 +4,22 @@ class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
 
     use CM_Service_ManagerAwareTrait;
 
+    /** @var array */
+    private $_config;
+
     /** @var \Aws\ImportExport\ImportExportClient */
     private $_client;
 
     /**
-     * @param array $clientConfig
+     * @param array $config
      */
-    public function __construct(array $clientConfig) {
-        $this->_client = \Aws\ImportExport\ImportExportClient::factory($clientConfig);
+    public function __construct(array $config) {
+        $this->_config = $config;
+
+        $this->_client = \Aws\ImportExport\ImportExportClient::factory([
+            'key'    => $config['key'],
+            'secret' => $config['secret'],
+        ]);
     }
 
     /**
@@ -67,7 +75,7 @@ class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
         $asserter = new S3Export_Asserter();
 
         $sourceFilesystem = $this->_getFilesystemOriginal();
-        $filePaths = $this->_getRandomFiles($backupFilesystem, 100);
+        $filePaths = $this->_getRandomFiles($backupFilesystem, 100, 100000);
         foreach ($filePaths as $path) {
             $backupFile = new CM_File($path, $backupFilesystem);
             $sourceFile = new CM_File($path, $sourceFilesystem);
@@ -100,12 +108,23 @@ class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
     }
 
     /**
+     * @throws CM_Exception_Invalid
+     * @return string
+     */
+    public function getBucketName() {
+        if (empty($this->_config['bucket'])) {
+            throw new CM_Exception_Invalid('Cannot find `bucket` in config');
+        }
+        return $this->_config['bucket'];
+    }
+
+    /**
      * @param CM_File_Filesystem $filesystem
      * @param int                $limit
+     * @param int                $poolLimit
      * @return string[]
      */
-    protected function _getRandomFiles(CM_File_Filesystem $filesystem, $limit) {
-        $poolLimit = 1000 * $limit;
+    protected function _getRandomFiles(CM_File_Filesystem $filesystem, $limit, $poolLimit) {
         $files = [];
         $directories = ['/'];
         do {

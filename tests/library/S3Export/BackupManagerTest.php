@@ -49,11 +49,11 @@ class S3export_BackupManagerTest extends PHPUnit_Framework_TestCase {
         /** @var S3Export_BackupManager $backupManager */
 
         $this->assertSame(0, $listByPrefixMethod->getCallCount());
-        $this->assertCount(45, CMTest_TH::callProtectedMethod($backupManager, '_getRandomFiles', [$filesystem, 45]));
+        $this->assertCount(15, CMTest_TH::callProtectedMethod($backupManager, '_getRandomFiles', [$filesystem, 15, 45]));
         // 6 times, because it needs to list root folder and then list 5 additional folders (10 files each) to get 45 files
         $this->assertSame(6, $listByPrefixMethod->getCallCount());
 
-        $this->assertCount(200, CMTest_TH::callProtectedMethod($backupManager, '_getRandomFiles', [$filesystem, 201]));
+        $this->assertCount(200, CMTest_TH::callProtectedMethod($backupManager, '_getRandomFiles', [$filesystem, 201, 500]));
         $this->assertSame(6 + 21, $listByPrefixMethod->getCallCount());
     }
 

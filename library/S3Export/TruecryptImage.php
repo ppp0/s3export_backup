@@ -50,6 +50,13 @@ class S3Export_TruecryptImage {
     }
 
     /**
+     * @return CM_File
+     */
+    public function getMountpoint() {
+        return new CM_File($this->_mountpointPath);
+    }
+
+    /**
      * @return CM_File_Filesystem
      */
     public function getFilesystem() {
