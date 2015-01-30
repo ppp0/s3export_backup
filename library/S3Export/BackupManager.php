@@ -100,6 +100,7 @@ class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
                 );
             }
         }
+        $output->writeln('');
         $output->writeln(join(', ', [
             "Assertions run: {$asserter->getAssertionCount()}",
             "succeeded: {$asserter->getAssertionSuccessCount()}",
