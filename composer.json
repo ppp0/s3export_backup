@@ -11,6 +11,15 @@
     "tomaszdurka/mocka": "~0.8.2",
     "fzaninotto/faker": "~1.4.0"
   },
+  "repositories": [
+    {
+      "packagist": false
+    },
+    {
+      "type": "composer",
+      "url": "http://satis.cargomedia.ch/dist"
+    }
+  ],
   "minimum-stability": "alpha",
   "autoload": {
     "psr-0": {
