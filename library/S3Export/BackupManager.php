@@ -67,13 +67,8 @@ class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
         $asserter = new S3Export_Asserter();
 
         $sourceFilesystem = $this->_getFilesystemOriginal();
-        // TODO: Performance/memory bottle-neck
-        $filePaths = $this->listFiles($backupFilesystem, 100000);
-        $numberOfIterations = min(1000, ceil(0.1 * count($filePaths)));
-        for ($i = 0; $i < $numberOfIterations; $i++) {
-            $index = array_rand($filePaths);
-            $path = $filePaths[$index];
-
+        $filePaths = $this->_getRandomFiles($backupFilesystem, 100);
+        foreach ($filePaths as $path) {
             $backupFile = new CM_File($path, $backupFilesystem);
             $sourceFile = new CM_File($path, $sourceFilesystem);
             $asserter->assertThat($sourceFile->exists(), null, function () use ($output, $backupFile) {
@@ -97,7 +92,8 @@ class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
      * @param int                $limit
      * @return string[]
      */
-    public function listFiles(CM_File_Filesystem $filesystem, $limit) {
+    protected function _getRandomFiles(CM_File_Filesystem $filesystem, $limit) {
+        $poolLimit = 1000 * $limit;
         $files = [];
         $directories = ['/'];
         do {
@@ -105,7 +101,9 @@ class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
             $entries = $filesystem->listByPrefix($path, true);
             $files = array_merge($files, $entries['files']);
             $directories = array_merge($directories, $entries['dirs']);
-        } while (count($files) < $limit && count($directories) > 0);
+            shuffle($directories);
+        } while (count($files) < $poolLimit && count($directories) > 0);
+        shuffle($files);
         return array_slice($files, 0, $limit);
     }
 
