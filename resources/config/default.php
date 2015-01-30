@@ -26,6 +26,7 @@ return function (CM_Config_Node $config) {
         'class'     => 'S3Export_BackupManager',
         'arguments' => [
             [
+                'bucket' => '<bucket>',
                 'key'    => '<access-key>',
                 'secret' => '<secret-access-key>',
             ]
