@@ -3,7 +3,7 @@ s3export_backup
 
 Command line tool to initiate and verify backups from AWS S3 Export on Debian.
 
-## Installation and configuration
+## Installation and Configuration
 
 ### Puppet
 Recommended way to install `s3export_backup` is using puppet.
@@ -25,7 +25,6 @@ For more hints look into https://github.com/cargomedia/puppet-packages/blob/mast
 #### Configuration
 There is single configuration file `./resources/config/local.php` which needs to be adjusted .
 Replace dummy variables with correct values as most features require access to remote (backup source) S3 filesystem.
-
 
 ## Usage
 When installed via puppet there should be global binary `s3export` (otherwise look for `./bin/s3export` inside the project). Binary provides various subcommands - listed below.
@@ -49,15 +48,30 @@ Commands:
  s3export verify-backup <device-path> <truecrypt-password> [--target-directory=<value>]
 ```
 
-### Backup verification
-Backup verification requires physical drive sent back by Amazon and properly configured S3 filesystem (see Configuration section).
+### Creating a Backup Job
+Extensive documentation is found [here](http://awsdocs.s3.amazonaws.com/ImportExport/latest/IE-qrc.pdf) - be aware that only *Export* is of importance here.
 
-Tool scans backup drive for 100 random files. Each file is verified against remote S3 filesystem using two checkes
+```
+#Example
+$ s3export create-job ./manifest /dev/sdb1 --dry-run
+```
+
+You need to provide a `manifest` file which has to be compiled according to [this reference](http://docs.aws.amazon.com/AWSImportExport/latest/DG/ManifestFileRef_Export.html).
+Please consult the provided example manifest file and modify it according to your needs. Be aware that only `ext4` is supported right now.
+
+
+### Backup Verification
+Backup verification requires that the physical drive be sent back by Amazon and properly a configured corresponding S3 filesystem (see Configuration section).
+
+Tool scans backup drive for 100 random files. Each file is verified against remote S3 filesystem using two checks
 - checks if corresponding file exists on remote filesystem
 - compares local (backup) and remote (source) file hashes
 
-#### Output interpretation
+#### Output Interpretation
 Maintainer should manually look into verification command output and analyze it.
 
-Failing existence check can be assumed as normal, as a file might have been already deleted from S3 filesystem until arrival of the backup drive.
-The second check (hash) is far more important and any mismatches should be treated as potential backup errors.
+##### File Does not Exist
+Not critical as a file might have been already deleted from S3 filesystem until arrival of the backup drive.
+
+##### Different Hashes
+To be taken seriously: file content differ and is likely to be a backup error
