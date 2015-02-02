@@ -21,11 +21,16 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
     }
 
     /**
-     * @param string $devicePath
-     * @param string $truecryptPassword
+     * @param string      $devicePath
+     * @param string      $truecryptPassword
+     * @param string|null $targetDirectory
      * @throws CM_Cli_Exception_Internal
      */
-    public function verifyBackup($devicePath, $truecryptPassword) {
+    public function verifyBackup($devicePath, $truecryptPassword, $targetDirectory = null) {
+        if (null === $targetDirectory) {
+            $targetDirectory = $this->_getBackupManager()->getBucketName();
+        }
+
         $device = new S3Export_Device($devicePath);
         if (!$device->hasPartitions()) {
             $device->fixPartitioning();
@@ -41,7 +46,11 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
         $truecryptImage = new S3Export_TruecryptImage($truecryptImageFile, $truecryptPassword);
         $truecryptImage->mount();
 
-        // Verify backup
+        $filesystemBackupRootPath = $truecryptImage->getMountpoint()->joinPath($targetDirectory)->getPathOnLocalFilesystem();
+        $adapter = new CM_File_Filesystem_Adapter_Local($filesystemBackupRootPath);
+        $filesystemBackup = new CM_File_Filesystem($adapter);
+
+        $this->_getBackupManager()->verifyExport($this->_getStreamOutput(), $filesystemBackup);
 
         $truecryptImage->unmount();
         $device->unmount();
@@ -94,14 +103,6 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_Manage
      */
     protected function _getBackupManager() {
         return CM_Service_Manager::getInstance()->get('s3export-backup-manager');
-    }
-
-    /**
-     * @return CM_File_Filesystem
-     * @throws CM_Exception_Invalid
-     */
-    protected function _getFilesystemOriginal() {
-        return CM_Service_Manager::getInstance()->get('s3export-filesystem-original');
     }
 
     public static function getPackageName() {
