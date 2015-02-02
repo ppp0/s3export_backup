@@ -3,13 +3,13 @@ s3export_backup
 
 Command line tool to initiate and verify backups from AWS S3 Export on Debian.
 
-## Installation
+## Installation and configuration
 
 ### Puppet
 Recommended way to install `s3export_backup` is using puppet.
 As Cargomedia we provide and support our own module, please take a look at https://github.com/cargomedia/puppet-packages/tree/master/modules/s3export_backup
 
-### Manual installation
+### Manual
 It is not recommended to install `s3export_backup` manually as it depends on several other libraries and is most likely hard to maintain.
 
 Still it's possible to install it via composer (https://packagist.org/packages/cargomedia/s3export_backup).
@@ -22,10 +22,10 @@ Additionally all listed requirements need to be installed manually:
 
 For more hints look into https://github.com/cargomedia/puppet-packages/blob/master/modules/s3export_backup/manifests/init.pp
 
-
-## Configuration
-There is single configuration file `resources/config/local.php` which needs to be adjusted .
+#### Configuration
+There is single configuration file `./resources/config/local.php` which needs to be adjusted .
 Replace dummy variables with correct values as most features require access to remote (backup source) S3 filesystem.
+
 
 ## Usage
 When installed via puppet there should be global binary `s3export` (otherwise look for `./bin/s3export` inside the project). Binary provides various subcommands - listed below.
