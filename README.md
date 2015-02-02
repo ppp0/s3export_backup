@@ -11,22 +11,24 @@ As Cargomedia we provide and support our own module, please take a look at https
 
 ### Manual installation
 It is not recommended to install tool manually as it depends on several other libraries and is most likely hard to maintain.
-It's possible to install s3export_backup via composer (https://packagist.org/packages/cargomedia/s3export_backup)
+
+Still it's possible to install s3export_backup via composer (https://packagist.org/packages/cargomedia/s3export_backup)
 A binary `./bin/s3export` should be executable once installation process is complete.
 
-Requirements:
+System requirements:
 - cm framework dependencies (php5, apcu, memcache, curl)
 - gdisk
 - truecrypt
-For more hints look at https://github.com/cargomedia/puppet-packages/blob/master/modules/s3export_backup/manifests/init.pp
+
+For more hints look into https://github.com/cargomedia/puppet-packages/blob/master/modules/s3export_backup/manifests/init.pp
 
 
 ## Configuration
-Most of functionalities require access to source S3 filesystem.
-To provide access for the tool a configuration file needs to be adjusted. Open `resources/config/local.php` and adjust dummy variables with correct values.
+There is single configuration file `resources/config/local.php` which needs to be adjusted .
+Replace dummy variables with correct values as most features require access to remote (backup source) S3 filesystem.
 
 ## Usage
-When installed via puppet there should be global binary `s3export` (otherwise look for `./bin/s3export` inside the project). Binary provides various subcommands listed below.
+When installed via puppet there should be global binary `s3export` (otherwise look for `./bin/s3export` inside the project). Binary provides various subcommands - listed below.
 ```
 Usage:
  [options] <command> [arguments]
@@ -48,13 +50,14 @@ Commands:
 ```
 
 ### Backup verification
-Backup verification requires physical drive sent back by Amazon and properly configured s3 filesystem (see Configuration section).
-Tool scans backup drive and finds 100 random files. Each file is verified against S3 filesystem.
-Each verification consists of two checks:
-- existence of the corresponding file on remote filesystem
-- comparison between local (backup) and remote (source) file hashes
+Backup verification requires physical drive sent back by Amazon and properly configured S3 filesystem (see Configuration section).
+
+Tool scans backup drive for 100 random files. Each file is verified against remote S3 filesystem using two checkes
+- checks if corresponding file exists on remote filesystem
+- compares local (backup) and remote (source) file hashes
 
 #### Output interpretation
-Maintainer should manually look into verification command output and interpret it on his own.
-Failing existence check can be assumed as normal, as a file might have been already deleted from S3 filesystem until arrival of the backup.
-The second check (hash) is far more important and any mismatches should be treated seriously as potential backup errors.
+Maintainer should manually look into verification command output and analyze it.
+
+Failing existence check can be assumed as normal, as a file might have been already deleted from S3 filesystem until arrival of the backup drive.
+The second check (hash) is far more important and any mismatches should be treated as potential backup errors.
