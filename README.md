@@ -10,8 +10,7 @@ Recommended way to install `s3export_backup` is using puppet.
 As Cargomedia we provide and support our own module, please take a look at https://github.com/cargomedia/puppet-packages/tree/master/modules/s3export_backup
 
 #### Configuration
-There is single configuration file `./resources/config/local.php` which needs to be adjusted .
-Replace dummy variables with correct values as most features require access to remote (backup source) S3 filesystem.
+There is a configuration file `./resources/config/local.php` where you need to provide your S3 credentials.
 
 ## Usage
 When installed via puppet there should be global binary `s3export` (otherwise look for `./bin/s3export` inside the project). Binary provides various subcommands - listed below.
@@ -62,7 +61,7 @@ Tool scans backup drive for 100 random files. Each file is verified against remo
 s3export verify-backup /dev/sdb1 mysupersecurepassword --target-directory=/s3-export-bucket/
 ```
 
-* `--target-directory=` is mandatory is you have given a `targetDirectory:` in the `manifest` other than `/`. The verification is not able to find the backup's root on the external disk otherwise.
+* `--target-directory=` is mandatory is you have provided a `targetDirectory:` in the `manifest`. The verification is not able to find the backup's root on the external disk otherwise.
 * As described above, 100 random files on the disk will be compared to their counterparts on S3. You obviously need to have internet access to accomplish this and to be aware that even though only the file's metadata is being transferred, you will be charged for the amount of data transferred.
 
 #### Output Interpretation
