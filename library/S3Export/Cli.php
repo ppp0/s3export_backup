@@ -1,12 +1,9 @@
 <?php
 
-class S3Export_Cli extends CM_Cli_Runnable_Abstract implements CM_Service_ManagerAwareInterface {
-
-    use CM_Service_ManagerAwareTrait;
+class S3Export_Cli extends CM_Cli_Runnable_Abstract {
 
     public function __construct(CM_InputStream_Interface $input = null, CM_OutputStream_Interface $output = null) {
         parent::__construct($input, $output);
-        $this->setServiceManager(CM_Service_Manager::getInstance());
     }
 
     public function listJobs() {
