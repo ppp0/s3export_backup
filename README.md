@@ -3,29 +3,14 @@ s3export_backup
 
 Command line tool to initiate and verify backups from AWS S3 Export on Debian.
 
-## Installation and configuration
+## Installation and Configuration
 
 ### Puppet
 Recommended way to install `s3export_backup` is using puppet.
 As Cargomedia we provide and support our own module, please take a look at https://github.com/cargomedia/puppet-packages/tree/master/modules/s3export_backup
 
-### Manual
-It is not recommended to install `s3export_backup` manually as it depends on several other libraries and is most likely hard to maintain.
-
-Still it's possible to install it via composer (https://packagist.org/packages/cargomedia/s3export_backup).
-A binary `./bin/s3export` should be executable once installation process is complete.
-
-Additionally all listed requirements need to be installed manually:
-- cm framework dependencies (php5, apcu, memcache, curl)
-- gdisk
-- truecrypt
-
-For more hints look into https://github.com/cargomedia/puppet-packages/blob/master/modules/s3export_backup/manifests/init.pp
-
 #### Configuration
-There is single configuration file `./resources/config/local.php` which needs to be adjusted .
-Replace dummy variables with correct values as most features require access to remote (backup source) S3 filesystem.
-
+There is a configuration file `./resources/config/local.php` where you need to provide your S3 credentials.
 
 ## Usage
 When installed via puppet there should be global binary `s3export` (otherwise look for `./bin/s3export` inside the project). Binary provides various subcommands - listed below.
@@ -49,15 +34,41 @@ Commands:
  s3export verify-backup <device-path> <truecrypt-password> [--target-directory=<value>]
 ```
 
-### Backup verification
-Backup verification requires physical drive sent back by Amazon and properly configured S3 filesystem (see Configuration section).
+### Creating a Backup Job
+Extensive documentation is found [here](http://awsdocs.s3.amazonaws.com/ImportExport/latest/IE-qrc.pdf) - be aware that only *Export* is of importance here.
 
-Tool scans backup drive for 100 random files. Each file is verified against remote S3 filesystem using two checkes
+```
+#Example
+$ s3export create-job ./manifest /dev/sdb1 --dry-run
+```
+
+You need to provide a `manifest` file which has to be compiled according to [this reference](http://docs.aws.amazon.com/AWSImportExport/latest/DG/ManifestFileRef_Export.html).
+Please consult the provided example manifest file and modify it according to your needs. Be aware that only `ext4` is supported right now.
+
+#### Customers Outside the U.S.
+When sending drives across customs, you need to add a `customs:` section to the manifest file. See the our example file and [this reference](http://docs.aws.amazon.com/AWSImportExport/latest/DG/ManifestFileRef_international.html) on how to proceed.
+
+### Backup Verification
+Backup verification requires that the physical drive be sent back by Amazon and properly a configured corresponding S3 filesystem (see Configuration section).
+
+Tool scans backup drive for 100 random files. Each file is verified against remote S3 filesystem using two checks
 - checks if corresponding file exists on remote filesystem
 - compares local (backup) and remote (source) file hashes
 
-#### Output interpretation
+#### Usage
+
+```sh
+s3export verify-backup /dev/sdb1 mysupersecurepassword --target-directory=/s3-export-bucket/
+```
+
+* `--target-directory=` is mandatory is you have provided a `targetDirectory:` in the `manifest`. The verification is not able to find the backup's root on the external disk otherwise.
+* As described above, 100 random files on the disk will be compared to their counterparts on S3. You obviously need to have internet access to accomplish this and to be aware that even though only the file's metadata is being transferred, you will be charged for the amount of data transferred.
+
+#### Output Interpretation
 Maintainer should manually look into verification command output and analyze it.
 
-Failing existence check can be assumed as normal, as a file might have been already deleted from S3 filesystem until arrival of the backup drive.
-The second check (hash) is far more important and any mismatches should be treated as potential backup errors.
+* File Does not Exist
+   Not critical as a file might have been already deleted from S3 filesystem until arrival of the backup drive.
+
+* Different Hashes
+   To be taken seriously: file content differ which is likely to be a backup error
