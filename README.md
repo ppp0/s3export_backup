@@ -49,18 +49,18 @@ When sending drives across customs, you need to add a `customs:` section to the 
 
 ### Backup Verification
 
+Backup verification requires that the physical drive be sent back by Amazon and properly a configured corresponding S3 filesystem (see Configuration section).
+
 ```
 $ s3export verify-backup /dev/sdb1 mysupersecurepassword --target-directory=/s3-export-bucket/
 ```
-`--target-directory=` is mandatory if you have provided a `targetDirectory:` in the `manifest`. The verification is not able to find the backup's root on the external disk otherwise.
+`--target-directory` is mandatory if you have provided a `targetDirectory:` in the `manifest`. The verification is not able to find the backup's root on the external disk otherwise.
 
-Backup verification requires that the physical drive be sent back by Amazon and properly a configured corresponding S3 filesystem (see Configuration section).
-
+Maintainer should manually look into verification command output and analyze it.
 Tool scans backup drive for 100 random files. Each file is verified against remote S3 filesystem using two checks
 - checks if corresponding file exists on remote filesystem
   - Not critical as a file might have been already deleted from S3 filesystem until arrival of the backup drive.
 - compares local (backup) and remote (source) file hashes
   - Failures to be taken seriously: file content differ which is likely to be a backup error
    
-Maintainer should manually look into verification command output and analyze it.
 *As described above, 100 random files on the disk will be compared to their counterparts on S3. You obviously need to have internet access to accomplish this and to be aware that even though only the file's metadata is being transferred, you will be charged for the amount of data transferred.*
