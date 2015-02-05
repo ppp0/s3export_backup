@@ -42,7 +42,7 @@ $ s3export create-job ./manifest /dev/sdb1 --dry-run
 ```
 
 You need to provide a `manifest` file which has to be compiled according to [this reference](http://docs.aws.amazon.com/AWSImportExport/latest/DG/ManifestFileRef_Export.html).
-Please consult the provided example manifest file and modify it according to your needs. Be aware that only `ext4` is supported right now.
+Please consult the provided [example manifest file](https://github.com/tomaszdurka/s3export_backup/blob/master/manifest) and modify it according to your needs. Be aware that only `ext4` is supported right now.
 
 #### Customers Outside the U.S.
 When sending drives across customs, you need to add a `customs:` section to the manifest file. See our example file and [this reference](http://docs.aws.amazon.com/AWSImportExport/latest/DG/ManifestFileRef_international.html) on how to proceed.
