@@ -16,8 +16,6 @@ Vagrant.configure('2') do |config|
   synced_folder_type = ENV.fetch('SYNC_TYPE', 'nfs')
   synced_folder_type = nil if 'vboxsf' == synced_folder_type
 
-  config.vm.network :private_network, ip: '10.10.10.11'
-  config.vm.network :public_network, :bridge => 'en0: Wi-Fi (AirPort)'
   config.vm.synced_folder '.', '/home/vagrant/s3export_backup', :type => synced_folder_type, :rsync__args => %w('--verbose --archive --delete -z')
 
   config.librarian_puppet.puppetfile_dir = 'puppet'

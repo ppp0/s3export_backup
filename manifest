@@ -1,0 +1,34 @@
+manifestVersion: 2.0
+generator: text editor
+accessKeyId: [Enter 20 character id]
+deviceId: [Enter device serial number (to be found on label)]
+fileSystem: EXT4
+serviceLevel: standard
+targetDirectory: [Optional - the directory where to start copying on the ext drive]
+logBucket: [Your log bucket]
+operations:
+  - exportBucket: [Your bucket]
+notificationEmail: [Your email address]
+trueCryptPassword: [Password to use when encrypting/decrypting]
+returnAddress:
+    name: [Your name]
+    company: [Optional - your company]
+    street1: [Your street]
+    street2: [Optional - additional street info]
+    street3: [Optional - additional street info]
+    city: [Your city]
+    stateOrProvince: [Your state or province]
+    postalCode: [Your postal code]
+    country: [Your country]
+    phoneNumber: [Contact number]
+customs:
+    dataDescription: This device contains a data backup.
+    encryptedData: yes
+    encryptionClassification: 5D992
+    exportCertifierName: [Your Name]
+    requiresExportLicense: no
+    deviceValue: [Value in USD]
+    deviceCountryOfOrigin: [Country of manufacturing (to be faound on label]
+    deviceType: [sataDrive | externalStorageDevice]
+    deviceHTS: [8471.70.2000 | 8471.70.4065]
+    typeOfExport: return
