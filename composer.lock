@@ -4,32 +4,32 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "9614f7078597e50168717b0c0e8c6b6e",
+    "hash": "4206511c60ed2685344f816d922d0455",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.6.16",
+            "version": "2.7.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "36434f2cd96ea78844478d897fb568a1866bce5a"
+                "reference": "7c97f11ca46c47209e597ebab6e74e164cdf6216"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/aws-aws-sdk-php-36434f2cd96ea78844478d897fb568a1866bce5a-zip-7b8f23.zip",
-                "reference": "36434f2cd96ea78844478d897fb568a1866bce5a",
-                "shasum": "4d9fe18d7a5e56104718980becbb55823a51e3bf"
+                "url": "http://satis.cargomedia.ch/dist/dist/aws-aws-sdk-php-7c97f11ca46c47209e597ebab6e74e164cdf6216-zip-3ff52b.zip",
+                "reference": "7c97f11ca46c47209e597ebab6e74e164cdf6216",
+                "shasum": "7f1796c53f5a16460c9a112459c1560725931c9b"
             },
             "require": {
-                "guzzle/guzzle": ">=3.7.0,<=3.9.9",
+                "guzzle/guzzle": "~3.7",
                 "php": ">=5.3.3"
             },
             "require-dev": {
                 "doctrine/cache": "~1.0",
                 "ext-openssl": "*",
-                "monolog/monolog": "1.4.*",
-                "phpunit/phpunit": "4.*",
-                "symfony/yaml": "2.*"
+                "monolog/monolog": "~1.4",
+                "phpunit/phpunit": "~4.0",
+                "symfony/yaml": "~2.1"
             },
             "suggest": {
                 "doctrine/cache": "Adds support for caching of credentials and responses",
@@ -41,7 +41,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.6.x-dev"
+                    "dev-master": "2.7-dev"
                 }
             },
             "autoload": {
@@ -71,30 +71,30 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2014-09-11 22:10:11"
+            "time": "2015-03-12 19:51:58"
         },
         {
             "name": "cargomedia/cm",
-            "version": "1.94.0",
+            "version": "1.107.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cargomedia/CM.git",
-                "reference": "bf09e5c2456e9d667bd14c0889b15fdda9521d23"
+                "reference": "aa76275631037cc0813cc9ef3bcfd032323c05ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cargomedia/CM/zipball/bf09e5c2456e9d667bd14c0889b15fdda9521d23",
-                "reference": "bf09e5c2456e9d667bd14c0889b15fdda9521d23",
-                "shasum": ""
+                "url": "http://satis.cargomedia.ch/dist/dist/cargomedia-cm-aa76275631037cc0813cc9ef3bcfd032323c05ad-zip-9dee9d.zip",
+                "reference": "aa76275631037cc0813cc9ef3bcfd032323c05ad",
+                "shasum": "3ef6203297fe97f9a078a626ca66a84aa6a4a39e"
             },
             "require": {
-                "aws/aws-sdk-php": "~2.6.0",
+                "aws/aws-sdk-php": "~2.7",
                 "composer/composer": "1.0.0-alpha8",
                 "easybook/geshi": "1.0.8.11",
                 "guzzlehttp/guzzle": "~4.1.7",
                 "kickbox/kickbox": "~1.0.3",
                 "kissmetrics/kissmetrics-php": "~0.1.0",
-                "leafo/lessphp": "0.3.*",
+                "leafo/lessphp": "~0.5.0",
                 "lstrojny/functional-php": "1.0.0-alpha2",
                 "michelf/php-markdown": "1.4.0",
                 "nicmart/tree": "~0.2.0",
@@ -125,11 +125,14 @@
                     "CMTest_": "tests/helpers/CMTest/library/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
-            "time": "2015-01-19 10:26:32"
+            "support": {
+                "source": "https://github.com/cargomedia/CM/tree/master",
+                "issues": "https://github.com/cargomedia/CM/issues"
+            },
+            "time": "2015-03-16 16:27:16"
         },
         {
             "name": "composer/composer",
@@ -609,22 +612,22 @@
         },
         {
             "name": "leafo/lessphp",
-            "version": "v0.3.9",
+            "version": "v0.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/leafo/lessphp.git",
-                "reference": "a11a6141b5715162b933c405379765d817891c5d"
+                "reference": "0f5a7f5545d2bcf4e9fad9a228c8ad89cc9aa283"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/leafo-lessphp-a11a6141b5715162b933c405379765d817891c5d-zip-5c3bef.zip",
-                "reference": "a11a6141b5715162b933c405379765d817891c5d",
-                "shasum": "52384b7a566d6a832ede493ae7e10531bc93330f"
+                "url": "http://satis.cargomedia.ch/dist/dist/leafo-lessphp-0f5a7f5545d2bcf4e9fad9a228c8ad89cc9aa283-zip-5f9a38.zip",
+                "reference": "0f5a7f5545d2bcf4e9fad9a228c8ad89cc9aa283",
+                "shasum": "3625ff0ed782cb82cafd6859872d79b456c90a00"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "0.3-dev"
+                    "dev-master": "0.4.x-dev"
                 }
             },
             "autoload": {
@@ -646,7 +649,7 @@
             ],
             "description": "lessphp is a compiler for LESS written in PHP.",
             "homepage": "http://leafo.net/lessphp/",
-            "time": "2013-03-02 16:13:31"
+            "time": "2014-11-24 18:39:20"
         },
         {
             "name": "lstrojny/functional-php",
@@ -745,17 +748,17 @@
         },
         {
             "name": "nicmart/tree",
-            "version": "v0.2.4",
+            "version": "v0.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nicmart/Tree.git",
-                "reference": "db8b5818e90da03d50662b5ed91ba19dd98e7c50"
+                "reference": "982bf9518dd7a407f8141cc334fc1e544aea2dea"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/nicmart-tree-db8b5818e90da03d50662b5ed91ba19dd98e7c50-zip-c00719.zip",
-                "reference": "db8b5818e90da03d50662b5ed91ba19dd98e7c50",
-                "shasum": "2b84a82655a16386b53ecf76b0a133577deb61c8"
+                "url": "http://satis.cargomedia.ch/dist/dist/nicmart-tree-982bf9518dd7a407f8141cc334fc1e544aea2dea-zip-8287ec.zip",
+                "reference": "982bf9518dd7a407f8141cc334fc1e544aea2dea",
+                "shasum": "851f91bcc99e8a6a36cf7f68daf47ee4f8d2ee8c"
             },
             "require": {
                 "php": ">=5.4"
@@ -774,12 +777,11 @@
             "authors": [
                 {
                     "name": "Nicolò Martini",
-                    "email": "nicmartnic@gmail.com",
-                    "homepage": "http://nicolo.martini.io"
+                    "email": "nicmartnic@gmail.com"
                 }
             ],
             "description": "A basic but flexible php tree data structure and a fluent tree builder implementation.",
-            "time": "2014-06-16 20:34:42"
+            "time": "2015-02-10 19:14:00"
         },
         {
             "name": "phpmailer/phpmailer",
@@ -996,18 +998,18 @@
         },
         {
             "name": "symfony/console",
-            "version": "v2.6.3",
+            "version": "v2.6.4",
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "6ac6491ff60c0e5a941db3ccdc75a07adbb61476"
+                "reference": "e44154bfe3e41e8267d7a3794cd9da9a51cfac34"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/symfony-console-6ac6491ff60c0e5a941db3ccdc75a07adbb61476-zip-41c862.zip",
-                "reference": "6ac6491ff60c0e5a941db3ccdc75a07adbb61476",
-                "shasum": "6ce5a5b7b9a39bf91e3a9cdaa34878f7bf190e3b"
+                "url": "http://satis.cargomedia.ch/dist/dist/symfony-console-e44154bfe3e41e8267d7a3794cd9da9a51cfac34-zip-78677b.zip",
+                "reference": "e44154bfe3e41e8267d7a3794cd9da9a51cfac34",
+                "shasum": "4c27b6b7758341b664d4efb1e9067c7eaaad303d"
             },
             "require": {
                 "php": ">=5.3.3"
@@ -1049,22 +1051,22 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2015-01-06 17:50:02"
+            "time": "2015-01-25 04:39:26"
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.6.3",
+            "version": "v2.6.4",
             "target-dir": "Symfony/Component/EventDispatcher",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/EventDispatcher.git",
-                "reference": "40ff70cadea3785d83cac1c8309514b36113064e"
+                "reference": "f75989f3ab2743a82fe0b03ded2598a2b1546813"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/symfony-event-dispatcher-40ff70cadea3785d83cac1c8309514b36113064e-zip-2cc0cd.zip",
-                "reference": "40ff70cadea3785d83cac1c8309514b36113064e",
-                "shasum": "19d5f6a29f983d930394968bc28ee936d3017604"
+                "url": "http://satis.cargomedia.ch/dist/dist/symfony-event-dispatcher-f75989f3ab2743a82fe0b03ded2598a2b1546813-zip-73358a.zip",
+                "reference": "f75989f3ab2743a82fe0b03ded2598a2b1546813",
+                "shasum": "c88b76fe91a59bd6db16710ea6181848f0a118b3"
             },
             "require": {
                 "php": ">=5.3.3"
@@ -1107,11 +1109,11 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "http://symfony.com",
-            "time": "2015-01-05 14:28:40"
+            "time": "2015-02-01 16:10:57"
         },
         {
             "name": "symfony/finder",
-            "version": "v2.6.3",
+            "version": "v2.6.4",
             "target-dir": "Symfony/Component/Finder",
             "source": {
                 "type": "git",
@@ -1158,18 +1160,18 @@
         },
         {
             "name": "symfony/process",
-            "version": "v2.6.3",
+            "version": "v2.6.4",
             "target-dir": "Symfony/Component/Process",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process.git",
-                "reference": "319794f611bd8bdefbac72beb3f05e847f8ebc92"
+                "reference": "ecfc23e89d9967999fa5f60a1e9af7384396e9ae"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/symfony-process-319794f611bd8bdefbac72beb3f05e847f8ebc92-zip-44bf59.zip",
-                "reference": "319794f611bd8bdefbac72beb3f05e847f8ebc92",
-                "shasum": "e93a0d8a81b643c20009c4a3ed7dffd29d9c7fec"
+                "url": "http://satis.cargomedia.ch/dist/dist/symfony-process-ecfc23e89d9967999fa5f60a1e9af7384396e9ae-zip-6ffc7d.zip",
+                "reference": "ecfc23e89d9967999fa5f60a1e9af7384396e9ae",
+                "shasum": "04c99653c2a82d9b10a4986c2d742cc6a0dc2da4"
             },
             "require": {
                 "php": ">=5.3.3"
@@ -1201,21 +1203,21 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "http://symfony.com",
-            "time": "2015-01-06 22:47:52"
+            "time": "2015-01-25 04:39:26"
         },
         {
             "name": "tomaszdurka/codegenerator",
-            "version": "0.4.1",
+            "version": "0.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tomaszdurka/codegenerator.git",
-                "reference": "7a90518e83d3b9a91d50c73b00ffb375e550624c"
+                "reference": "d577a3f0b80adfd9a494db2c9c2589b8a4dfe901"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/tomaszdurka-codegenerator-7a90518e83d3b9a91d50c73b00ffb375e550624c-zip-848e56.zip",
-                "reference": "7a90518e83d3b9a91d50c73b00ffb375e550624c",
-                "shasum": "f1ee2ccf0742298071b816eeb5b06f78390f7338"
+                "url": "http://satis.cargomedia.ch/dist/dist/tomaszdurka-codegenerator-d577a3f0b80adfd9a494db2c9c2589b8a4dfe901-zip-52de0b.zip",
+                "reference": "d577a3f0b80adfd9a494db2c9c2589b8a4dfe901",
+                "shasum": "39e5fa14f7072b25d8156138e8f324e19ae5ec0e"
             },
             "require-dev": {
                 "phpunit/phpunit": "~3.7.10",
@@ -1234,7 +1236,7 @@
                     "email": "tomasz@durka.pl"
                 }
             ],
-            "time": "2014-06-18 21:48:49"
+            "time": "2015-02-23 00:56:29"
         }
     ],
     "packages-dev": [
@@ -1261,9 +1263,7 @@
             },
             "type": "library",
             "extra": {
-                "branch-alias": [
-
-                ]
+                "branch-alias": []
             },
             "autoload": {
                 "psr-0": {
@@ -1985,18 +1985,18 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.6.3",
+            "version": "v2.6.4",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "82462a90848a52c2533aa6b598b107d68076b018"
+                "reference": "60ed7751671113cf1ee7d7778e691642c2e9acd8"
             },
             "dist": {
                 "type": "zip",
-                "url": "http://satis.cargomedia.ch/dist/dist/symfony-yaml-82462a90848a52c2533aa6b598b107d68076b018-zip-32919c.zip",
-                "reference": "82462a90848a52c2533aa6b598b107d68076b018",
-                "shasum": "02167a177e4e3e825cc1a43fa4e182b864c446ef"
+                "url": "http://satis.cargomedia.ch/dist/dist/symfony-yaml-60ed7751671113cf1ee7d7778e691642c2e9acd8-zip-bf5d1d.zip",
+                "reference": "60ed7751671113cf1ee7d7778e691642c2e9acd8",
+                "shasum": "ecf4079a215ec45609259581210fe2af7078f469"
             },
             "require": {
                 "php": ">=5.3.3"
@@ -2028,7 +2028,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2015-01-03 15:33:07"
+            "time": "2015-01-25 04:39:26"
         },
         {
             "name": "tomaszdurka/mocka",
@@ -2064,19 +2064,11 @@
             "time": "2015-01-30 14:33:30"
         }
     ],
-    "aliases": [
-
-    ],
+    "aliases": [],
     "minimum-stability": "alpha",
-    "stability-flags": [
-
-    ],
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [
-
-    ],
-    "platform-dev": [
-
-    ]
+    "platform": [],
+    "platform-dev": []
 }

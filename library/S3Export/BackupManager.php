@@ -59,6 +59,14 @@ class S3Export_BackupManager implements CM_Service_ManagerAwareInterface {
     }
 
     /**
+     * @param string[] $jobIds
+     * @return \Guzzle\Service\Resource\Model
+     */
+    public function getShippingLabel(array $jobIds) {
+        return $this->_client->getShippingLabel(['jobIds' => $jobIds]);
+    }
+
+    /**
      * @param S3Export_AwsBackupJob $job
      * @param S3Export_Device       $device
      */

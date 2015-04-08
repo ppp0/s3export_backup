@@ -95,6 +95,16 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract {
     }
 
     /**
+     * @param string $jobId
+     */
+    public function getShippingLabel($manifestPath) {
+        $manifestFile = new CM_File($manifestPath);
+
+        $this->_getBackupManager()->getShippingLabel();
+        $this->_getStreamOutput()->writeln('Shipping Label ready to be downloaded (PDF)');
+    }
+
+    /**
      * @return S3Export_BackupManager
      * @throws CM_Exception_Invalid
      */
