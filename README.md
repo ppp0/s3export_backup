@@ -30,6 +30,7 @@ Options:
 Commands:
  s3export cancel-job <job-id>
  s3export create-job <manifest-path> <device-path> [--skip-format] [--dry-run]
+ s3export get-shipping-label <manifest-path> <job-id>
  s3export get-status <job-id>
  s3export list-jobs
  s3export verify-backup <device-path> <truecrypt-password> [--target-directory=<value>]
@@ -46,6 +47,16 @@ Please consult the provided [example manifest file](https://github.com/tomaszdur
 
 #### Customers Outside the U.S.
 When sending drives across customs, you need to add a `customs:` section to the manifest file. See our example file and [this reference](http://docs.aws.amazon.com/AWSImportExport/latest/DG/ManifestFileRef_international.html) on how to proceed.
+
+### Preparing a Shipment
+
+```
+$ s3export get-shipping-label ./manifest JOBID
+```
+
+Once successfully executed, a pdf file will be post to s3 into the bucket configured as `logbucket`in the manifest. Print it **twice**, tape one copy to the parcel, hand over the other one to the driver collecting the shipment.
+International customers (outside the U.S.) need to attach **three copies** of a pro-forma invoice to the shipment. This helps the customs judge the value and the type of the parcel's content.
+Also, print, fill out and include [this sheet](http://s3.amazonaws.com/awsimportexport/AWS_Import_Export_Packing_Slip.pdf) to the shipment.
 
 ### Backup Verification
 
