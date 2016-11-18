@@ -1,22 +1,20 @@
 Vagrant.configure('2') do |config|
   config.ssh.forward_agent = true
-  config.vm.box = 'cargomedia/debian-7-amd64-cm'
+  config.vm.box = 'cargomedia/debian-8-amd64-cm'
+  config.vm.network :private_network, ip: '10.10.33.10'
 
-  config.vm.hostname = 'www.s3export-backup.dev'
-  if Vagrant.has_plugin? 'landrush'
-    config.landrush.enable
-    config.landrush.tld = 'dev'
-    config.landrush.host 's3export-backup.dev'
+  config.vm.synced_folder '.', '/home/vagrant/s3export_backup', :type => 'nfs'
+
+  config.vm.provider 'virtualbox' do |vb|
+    vb.customize ['modifyvm', :id, '--usb', 'on']
+    vb.customize ['modifyvm', :id, '--usbxhci', 'on']
+    vb.customize ['usbfilter', 'add', '0',
+                  '--target', :id,
+                  '--name', 'diskAshur',
+                  '--vendorid', '0x0984',
+                  '--productid', '0x0316'
+                 ]
   end
-
-  if Vagrant.has_plugin? 'vagrant-phpstorm-tunnel'
-    config.phpstorm_tunnel.project_home = '/home/vagrant/s3export_backup'
-  end
-
-  synced_folder_type = ENV.fetch('SYNC_TYPE', 'nfs')
-  synced_folder_type = nil if 'vboxsf' == synced_folder_type
-
-  config.vm.synced_folder '.', '/home/vagrant/s3export_backup', :type => synced_folder_type, :rsync__args => %w('--verbose --archive --delete -z')
 
   config.librarian_puppet.puppetfile_dir = 'puppet'
   config.librarian_puppet.placeholder_filename = '.gitkeep'

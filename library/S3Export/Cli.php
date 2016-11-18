@@ -19,11 +19,10 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract {
 
     /**
      * @param string      $devicePath
-     * @param string      $truecryptPassword
      * @param string|null $targetDirectory
      * @throws CM_Cli_Exception_Internal
      */
-    public function verifyBackup($devicePath, $truecryptPassword, $targetDirectory = null) {
+    public function verifyBackup($devicePath, $targetDirectory = null) {
         if (null === $targetDirectory) {
             $targetDirectory = $this->_getBackupManager()->getBucketName();
         }
@@ -33,23 +32,13 @@ class S3Export_Cli extends CM_Cli_Runnable_Abstract {
             $device->fixPartitioning();
         }
         $device->mount();
-        $truecryptImageFile = \Functional\first($device->getMountpoint()->listFiles(), function (CM_File $file) {
-            return $file->getExtension() === 'tc';
-        });
-        if (null === $truecryptImageFile) {
-            throw new CM_Cli_Exception_Internal("Cannot find truecrypt image on `{$device->getPath()}`");
-        }
 
-        $truecryptImage = new S3Export_TruecryptImage($truecryptImageFile, $truecryptPassword);
-        $truecryptImage->mount();
-
-        $filesystemBackupRootPath = $truecryptImage->getMountpoint()->joinPath($targetDirectory)->getPathOnLocalFilesystem();
+        $filesystemBackupRootPath = $device->getMountpoint()->joinPath($targetDirectory)->getPathOnLocalFilesystem();
         $adapter = new CM_File_Filesystem_Adapter_Local($filesystemBackupRootPath);
         $filesystemBackup = new CM_File_Filesystem($adapter);
 
         $this->_getBackupManager()->verifyExport($this->_getStreamOutput(), $filesystemBackup);
 
-        $truecryptImage->unmount();
         $device->unmount();
     }
 
