@@ -5,9 +5,6 @@ class S3Export_Device {
     /** @var string */
     private $_path;
 
-    /** @var string */
-    private $_mountpointPath;
-
     /**
      * @param string $path
      */
@@ -20,9 +17,7 @@ class S3Export_Device {
      * @throws CM_Exception
      */
     public function isMounted() {
-        $mounts = CM_Util::exec('cat', ['/proc/mounts']);
-        $mountPattern = '/' . preg_quote($this->_path, '/') . '.+' . preg_quote($this->_mountpointPath, '/') . '/';
-        return (bool) preg_match($mountPattern, $mounts);
+        return null !== $this->_findMountpoint();
     }
 
     /**
@@ -33,15 +28,20 @@ class S3Export_Device {
             return;
         }
         $tmpDir = CM_File::createTmpDir();
-        $this->_mountpointPath = (string) $tmpDir->getPathOnLocalFilesystem();
-        CM_Util::exec('sudo mount', [$this->_path, $this->_mountpointPath]);
+        $mountpointPath = (string) $tmpDir->getPathOnLocalFilesystem();
+        CM_Util::exec('sudo mount', [$this->_path, $mountpointPath]);
+
+        $this->_waitForMountStatus(true);
     }
 
     public function unmount() {
-        if (!$this->isMounted()) {
+        $mountpoint = $this->_findMountpoint();
+        if (null === $mountpoint) {
             return;
         }
-        CM_Util::exec('sudo umount', [$this->_mountpointPath]);
+        CM_Util::exec('sudo umount', [$mountpoint]);
+
+        $this->_waitForMountStatus(false);
     }
 
     public function format() {
@@ -67,9 +67,14 @@ class S3Export_Device {
 
     /**
      * @return CM_File_Filesystem
+     * @throws CM_Exception
      */
     public function getFilesystem() {
-        $adapter = new CM_File_Filesystem_Adapter_Local($this->_mountpointPath);
+        $mountpoint = $this->_findMountpoint();
+        if (null == $mountpoint) {
+            throw new CM_Exception('Device is not mounted', ['device' => $this->getPath()]);
+        }
+        $adapter = new CM_File_Filesystem_Adapter_Local($mountpoint);
         $filesystem = new CM_File_Filesystem($adapter);
         return $filesystem;
     }
@@ -80,7 +85,7 @@ class S3Export_Device {
      */
     public function hasPartitions() {
         $blocks = explode("\n", CM_Util::exec('lsblk', ['-n', '-o', 'TYPE', $this->_getPathWithoutPartition()]));
-        return \Functional\some($blocks, function($block) {
+        return \Functional\some($blocks, function ($block) {
             return $block === 'part';
         });
     }
@@ -109,5 +114,31 @@ class S3Export_Device {
      */
     protected function _getPathWithoutPartition() {
         return preg_replace('/\d+$/', '', $this->_path);
+    }
+
+    /**
+     * @return string|null
+     */
+    protected function _findMountpoint() {
+        $mounts = (new CM_File('/proc/mounts'))->read();
+        $mountPattern = '/^' . preg_quote($this->_path, '/') . '\s+([^\s]+)/m';
+        if (!preg_match($mountPattern, $mounts, $matches)) {
+            return null;
+        }
+        return $matches[1];
+    }
+
+    /**
+     * @param boolean $stateExpected
+     * @throws CM_Exception
+     */
+    protected function _waitForMountStatus($stateExpected) {
+        $timeMax = microtime(true) + 5;
+        while ($stateExpected !== $this->isMounted()) {
+            usleep(1000000 * 0.1);
+            if (microtime(true) > $timeMax) {
+                throw new CM_Exception('Timeout waiting for mount state', ['device' => $this->getPath(), 'expected-state' => $stateExpected]);
+            }
+        }
     }
 }
